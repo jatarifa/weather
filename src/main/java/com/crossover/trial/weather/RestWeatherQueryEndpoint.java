@@ -49,6 +49,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
      *
      * @return a JSON formatted dict with health information.
      */
+    @Override
     @GET
     @Path("/ping")
 	public String ping()
@@ -100,6 +101,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
      * @return an HTTP Response and a list of {@link AtmosphericInformation} from the requested airport and
      * airports in the given radius
      */
+    @Override
     @GET
     @Path("/weather/{iata}/{radius}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -108,22 +110,36 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 	{
 		Optional<AirportData> airport = repo.findAirportData(iata);
     	if(!airport.isPresent())
-        	return Response.status(Response.Status.OK).entity(Collections.emptyList()).build();
+    	{
+    		log.error("Airport not found. : {}", iata);
+        	return Response.status(Response.Status.BAD_REQUEST).entity(Collections.emptyList()).build();
+    	}
 
 		double radius = Optional.ofNullable(radiusString).map(r -> Double.valueOf(r)).orElse(0.0);
+		if(radius < 0)
+		{
+    		log.error("Incorrect radius. : {}", radiusString);
+        	return Response.status(Response.Status.BAD_REQUEST).entity(Collections.emptyList()).build();
+		}
+		
         repo.updateRequestFrequency(iata, radius);
 
         List<AtmosphericInformation> retval;
         if (radius == 0.0) 
         	retval = Arrays.asList(airport.get().getAtmosphericInformation());
         else 
+        {
         	retval = repo.getAirportData()
         				 .stream()
         				 .filter(a -> a.getAtmosphericInformation().notEmpty())
         				 .filter(a -> airport.get().calculateDistanceTo(a) <= radius)
         				 .map(a -> a.getAtmosphericInformation())
         				 .collect(Collectors.toList());
-        
+        	
+        	if(retval.size() == 0)
+        		retval = Arrays.asList(airport.get().getAtmosphericInformation());
+        }
+                
     	return Response.status(Response.Status.OK).entity(retval).build();
 	}
 }

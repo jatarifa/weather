@@ -4,7 +4,9 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -37,6 +39,7 @@ public class AtmosphericInformation
 
     /** the last time this data was updated, in milliseconds since UTC epoch */
     @JsonIgnore
+    @Setter(AccessLevel.NONE)
     private long lastUpdateTime = 0;
     
     public AtmosphericInformation()

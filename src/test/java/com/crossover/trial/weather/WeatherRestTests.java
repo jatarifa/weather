@@ -18,12 +18,16 @@ import org.springframework.web.client.RestTemplate;
 
 import com.crossover.trial.weather.loader.AirportLoader;
 import com.crossover.trial.weather.model.AirportData;
+import com.crossover.trial.weather.model.AtmosphericInformation;
 import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.repo.WeatherRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.*;
 
 import java.io.FileReader;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -38,6 +42,9 @@ public class WeatherRestTests
 
 	@Autowired
 	private WeatherRepository repo;
+	
+	@Autowired
+	private ObjectMapper mapper;
 	
 	@Value("${server.port}")
 	int port;
@@ -110,7 +117,95 @@ public class WeatherRestTests
         assertTrue(airport.getBody().getLon() == 180);
     }       
     
+    @Test
+    public void collectAddAirport() 
+    {
+    	AirportData air = new AirportData();
+    	air.setName("Barajas");
+    	air.setCity("Madrid");
+    	air.setCountry("Spain");
+    	air.setIata("KKFKFK");  //bad
+    	air.setIcao("MADRDD");  //bad
+    	air.setAlt(1000.23);
+    	air.setLat(10.2);
+    	air.setLon(33.22);
+    	air.setTimezone(200);
+    	air.setDst("3");        //bad
+    	
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+
+    	air.setIata("MAD");
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+
+    	air.setIcao("MADR");
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+
+    	air.setDst("E");
+    	ResponseEntity<AirportData> airport;
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+    	airport = rest.exchange(getBase() + "/collect/airport/MAD", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
+        assertTrue(airport.getBody() != null);
+        assertTrue(airport.getBody().getIata().equals("MAD"));
+        assertTrue(airport.getBody().getLat() == 10.2);
+        assertTrue(airport.getBody().getLon() == 33.22);
+        assertTrue(airport.getBody().getName().equals("Barajas"));
+
+        air.setLat(1);
+        air.setLon(9);
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+    	airport = rest.exchange(getBase() + "/collect/airport/MAD", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
+        assertTrue(airport.getBody() != null);
+        assertTrue(airport.getBody().getIata().equals("MAD"));
+        assertTrue(airport.getBody().getLat() == 1);
+        assertTrue(airport.getBody().getLon() == 9);
+    }       
+
+    @Test
+	public void collectDeleteAirport()
+	{
+    	assertTrue(rest.exchange(getBase() + "/collect/airport/PPP", HttpMethod.DELETE, HttpEntity.EMPTY, String.class).getStatusCode().is2xxSuccessful());
+
+    	AirportData airport = rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class).getBody();
+    	assertNotNull(airport);
+    	assertTrue(rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.DELETE, HttpEntity.EMPTY, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class).getStatusCode().is2xxSuccessful());
+	}
+	
+    @SuppressWarnings("unchecked")
+	@Test
+	public void queryPing() throws Exception
+	{
+    	ResponseEntity<String> res = rest.getForEntity(getBase() + "/query/ping", String.class);
+    	assertTrue(res.getStatusCode().is2xxSuccessful());
+    	Map<String, Object> map = (Map<String, Object>)mapper.readValue(res.getBody(), Map.class);
+    	assertEquals(3, map.size());
+    	assertNotNull(map.get("datasize"));
+    	assertNotNull(map.get("iata_freq"));
+    	assertNotNull(map.get("radius_freq"));
+	}
     
+    @Test
+	public void queryWeather()
+	{
+		ResponseEntity<List<AtmosphericInformation>> info = rest.exchange(getBase() + "/query/weather/AAA/0", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
+		assertTrue(!info.getStatusCode().is2xxSuccessful());
+
+		info = rest.exchange(getBase() + "/query/weather/BOS/0", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
+		assertNotNull(info.getBody());
+		assertEquals(1, info.getBody().size());
+
+		
+		DataPoint p = new DataPoint.Builder().withFirst(10).withSecond(20).withThird(30).withMean(22).withCount(10).build();
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/JFK/wind", p, String.class).getStatusCode());    	
+        p.setMean(40.0);
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/EWR/wind", p, String.class).getStatusCode());    	
+        p.setMean(30.0);
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/LGA/wind", p, String.class).getStatusCode());
+		
+		info = rest.exchange(getBase() + "/query/weather/JFK/200", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
+		assertNotNull(info.getBody());
+		assertEquals(3, info.getBody().size());
+	}
     
     @Test
 	public void testLoader() throws Exception

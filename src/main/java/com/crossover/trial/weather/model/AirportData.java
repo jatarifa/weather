@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.AccessLevel;
 
 @Getter
 @Setter
@@ -36,7 +37,11 @@ public class AirportData
     private double alt;
     private double timezone;
     private String dst;
+    
+    @Setter(AccessLevel.NONE)
     private Integer requestFrequency = 0;
+    
+    @Setter(AccessLevel.NONE)
     private AtmosphericInformation atmosphericInformation;
     
     public AirportData() 
@@ -55,13 +60,14 @@ public class AirportData
     	setName(d.getName());
     	setCity(d.getCity());
     	setCountry(d.getCountry());
-    	setIata(d.getIcao());
+    	setIata(d.getIata());
     	setIcao(d.getIcao());
     	setAlt(d.getAlt());
     	setLat(d.getLat());
     	setLon(d.getLon());
     	setDst(d.getDst());
-    	setAtmosphericInformation(d.getAtmosphericInformation().clone());
+    	requestFrequency = d.getRequestFrequency();
+    	atmosphericInformation = d.getAtmosphericInformation().clone();
     }
     
     public AirportData clone()
@@ -77,8 +83,8 @@ public class AirportData
     	ad.setLon(lon);
     	ad.setTimezone(timezone);
     	ad.setDst(dst);
-    	ad.setRequestFrequency(requestFrequency);
-    	ad.setAtmosphericInformation(atmosphericInformation.clone());
+    	ad.requestFrequency = requestFrequency;
+    	ad.atmosphericInformation = atmosphericInformation.clone();
     	
     	return ad;
     }

@@ -70,7 +70,7 @@ public class WeatherRepository implements InitializingBean
      */
     public void addAirport(AirportData ad) 
     {
-    	ad.setIata(ad.getIata().toUpperCase());
+    	ad.setIata(ad.getIata() != null ? ad.getIata().toUpperCase() : null);
     	AirportData.validateData(ad);
     	
     	Optional<AirportData> old = findAirportData(ad.getIata());
@@ -87,12 +87,11 @@ public class WeatherRepository implements InitializingBean
      *
      * @return the deleted airport
      */
-    public AirportData deleteAirport(String iataCode)
+    public void deleteAirport(String iataCode)
     {
-    	AirportData a = findAirportData(iataCode).get();
-    	airportData = airportData.minus(a);
-    	
-    	return a;
+    	findAirportData(iataCode).ifPresent(a -> { 
+    		airportData = airportData.minus(a);
+    	});
     }
     
     /**

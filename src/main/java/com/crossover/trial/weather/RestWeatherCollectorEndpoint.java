@@ -182,6 +182,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	}
     	catch(Exception e)
     	{
+    		log.error("Error adding airport : " + e.getMessage());
     		return Response.status(Response.Status.BAD_REQUEST).build();
     	}
     }
