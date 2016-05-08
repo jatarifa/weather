@@ -8,8 +8,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,8 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
      *
      * @return a JSON formatted dict with health information.
      */
+    @GET
+    @Path("/ping")
 	public String ping()
 	{
 		try
@@ -95,8 +100,11 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
      * @return an HTTP Response and a list of {@link AtmosphericInformation} from the requested airport and
      * airports in the given radius
      */
-	public Response weather(@PathParam("iata") String iata, 
-							@PathParam("radius") String radiusString)
+    @GET
+    @Path("/weather/{iata}/{radius}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response weather(@PathParam("iata") String iata, 
+    						@PathParam("radius") String radiusString)
 	{
 		Optional<AirportData> airport = repo.findAirportData(iata);
     	if(!airport.isPresent())

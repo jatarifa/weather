@@ -1,6 +1,7 @@
 package com.crossover.trial.weather.config;
 
 import org.glassfish.jersey.server.ResourceConfig;
+
 import org.springframework.stereotype.Component;
 
 import com.crossover.trial.weather.RestWeatherQueryEndpoint;
@@ -13,5 +14,6 @@ public class JerseyConfig extends ResourceConfig
 	{
 		register(RestWeatherCollectorEndpoint.class);
 		register(RestWeatherQueryEndpoint.class);
+		register(JerseyProbe.class);
 	}
 }

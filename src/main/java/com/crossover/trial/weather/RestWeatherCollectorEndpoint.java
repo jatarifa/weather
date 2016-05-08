@@ -2,8 +2,13 @@ package com.crossover.trial.weather;
 
 import java.util.Set;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +51,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return always 'ready'
      */
     @Override
+    @GET
+    @Path("/ping")
     public Response ping() 
     {
     	return Response.status(Response.Status.OK).entity("ready").build();
@@ -62,6 +69,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return HTTP Response code
      */
     @Override
+    @POST
+    @Path("/weather/{iata}/{pointType}")
 	public Response updateWeather(@PathParam("iata") String iataCode, 
 								  @PathParam("pointType") String pointType,
 								  String dataPointJson) 
@@ -93,6 +102,9 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return HTTP Response code and a json formatted list of IATA codes
      */
     @Override
+    @GET
+    @Path("/airports")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getAirports() 
     {
     	Set<String> aps = repo.getAirports();
@@ -106,6 +118,9 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return an HTTP Response with a json representation of {@link AirportData}
      */
     @Override
+    @GET
+    @Path("/airport/{iata}")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getAirport(@PathParam("iata") String iata) 
     {
     	AirportData ad = repo.findAirportData(iata).orElse(null);
@@ -122,6 +137,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return HTTP Response code for the add operation
      */
     @Override
+    @POST
+    @Path("/airport/{iata}/{lat}/{long}")
     public Response addAirport(@PathParam("iata") String iata,
     						   @PathParam("lat")  String latString,
     						   @PathParam("long") String longString)
@@ -147,6 +164,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return HTTP Response code for the add operation
      */
     @Override
+    @POST
+    @Path("/airport")
     public Response addAirport(String airportDataJson)
     {
     	try
@@ -168,6 +187,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
      * @return HTTP Response code for the delete operation
      */
     @Override
+    @DELETE
+    @Path("/airport/{iata}")
     public Response deleteAirport(@PathParam("iata") String iata) 
     {
     	repo.deleteAirport(iata);
@@ -175,6 +196,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     }    
 
     @Override
+    @GET
+    @Path("/exit")
     public Response exit() 
     {
     	log.info("Closing app.");
