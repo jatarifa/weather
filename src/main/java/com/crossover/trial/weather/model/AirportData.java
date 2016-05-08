@@ -51,12 +51,12 @@ public class AirportData
         requestFrequency = 0;
 	}
     
-    public void incrementRequestFrecuency()
+    public synchronized void incrementRequestFrecuency()
     {
     	requestFrequency++;
     }
     
-    public void copyFrom(AirportData d)
+    public synchronized void copyFrom(AirportData d)
     {
     	setName(d.getName());
     	setCity(d.getCity());

@@ -92,36 +92,6 @@ public class AtmosphericInformation
 	{
 		return lastUpdateTime;
 	}
-        
-	public void setWind(DataPoint wind) 
-	{
-		this.wind = Optional.ofNullable(wind);
-	}
-	
-	public void setCloudCover(DataPoint cloudCover) 
-	{
-		this.cloudCover = Optional.ofNullable(cloudCover);
-	}
-	
-	public void setHumidity(DataPoint humidity) 
-	{
-		this.humidity = Optional.ofNullable(humidity);
-	}
-	
-	public void setPrecipitation(DataPoint precipitation) 
-	{
-		this.precipitation = Optional.ofNullable(precipitation);
-	}
-	
-	public void setPressure(DataPoint pressure) 
-	{
-		this.pressure = Optional.ofNullable(pressure);
-	}
-	
-	public void setTemperature(DataPoint temperature) 
-	{
-		this.temperature = Optional.ofNullable(temperature);
-	}
 	
     public boolean notEmpty()
     {
@@ -154,7 +124,7 @@ public class AtmosphericInformation
      * @param pointType the data point type as a string
      * @param dp the actual data point
      */
-    public void updateAtmosphericInformation(DataPointType pointType, DataPoint point)
+    public synchronized void updateAtmosphericInformation(DataPointType pointType, DataPoint point)
     {
     	Optional<DataPoint> dp = Optional.ofNullable(point.clone());
 
