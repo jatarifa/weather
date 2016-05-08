@@ -2,6 +2,8 @@ package com.crossover.trial.weather.model;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
@@ -38,6 +40,7 @@ public class AtmosphericInformation
 
     /** the last time this data was updated, in milliseconds since UTC epoch */
     @Setter(AccessLevel.NONE)
+    @JsonIgnore
     private long lastUpdateTime = 0;
     
     public AtmosphericInformation()
