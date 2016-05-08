@@ -17,6 +17,17 @@ public class WeatherServer implements InitializingBean
 	@Autowired
 	private Environment environment;
 
+    /**
+     * Starts the server
+     */
+	public static void main(String[] args) 
+	{
+		SpringApplication.run(WeatherServer.class, args);
+	}
+
+    /**
+     * Inform after server init
+     */
 	@Override
 	public void afterPropertiesSet() throws Exception 
 	{
@@ -25,11 +36,9 @@ public class WeatherServer implements InitializingBean
 									environment.getProperty("server.port"));	
 	}
     
-	public static void main(String[] args) 
-	{
-		SpringApplication.run(WeatherServer.class, args);
-	}
-	
+    /**
+     * Configure Jackson Json Mapper
+     */
 	@Bean
 	public Jackson2ObjectMapperBuilder jacksonBuilder() 
 	{

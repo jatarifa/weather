@@ -19,21 +19,37 @@ import com.crossover.trial.weather.model.DataPointType;
 @Repository
 public class WeatherRepository implements InitializingBean
 {    
-    /** all known airports */
-    private MapPSet<AirportData> airportData = HashTreePSet.empty();
+	// Immutable and Thread-safe HashMap of airports
+	private MapPSet<AirportData> airportData = HashTreePSet.empty();
 
+	// Immutable and Thread-safe HashMap of frecuencies
     private HashPMap<Double, Integer> radiusFreq = HashTreePMap.empty();
 
+    /**
+     * Gets all the airports.
+     *
+     * @return set of airports
+     */
     public Set<AirportData> getAirportData() 
     {
     	return airportData;
 	}
-    
+
+    /**
+     * Gets the radius frequency.
+     *
+     * @return set of frecuencies
+     */
     public Map<Double, Integer> getRadiusFreq() 
     {
     	return radiusFreq;
 	}
     
+    /**
+     * Gets all the iata codes from the airports.
+     *
+     * @return set of iata codes
+     */
     public Set<String> getAirports()
     {
     	return airportData.stream().map(a -> a.getIata()).collect(Collectors.toSet());
@@ -43,7 +59,7 @@ public class WeatherRepository implements InitializingBean
      * Given an iataCode find the airport data
      *
      * @param iataCode as a string
-     * @return airport data or null if not found
+     * @return airport data or empty if not found
      */
     public Optional<AirportData> findAirportData(String iataCode) 
     {
@@ -85,7 +101,6 @@ public class WeatherRepository implements InitializingBean
      *
      * @param iataCode
      *
-     * @return the deleted airport
      */
     public void deleteAirport(String iataCode)
     {
@@ -106,6 +121,9 @@ public class WeatherRepository implements InitializingBean
         radiusFreq = radiusFreq.plus(radius, radiusFreq.getOrDefault(radius, 0) + 1);    
     }
     
+    /**
+     * Inits the mocked airports
+     */
     public void init() 
     {
         airportData = HashTreePSet.empty();
@@ -117,7 +135,10 @@ public class WeatherRepository implements InitializingBean
         addAirport(getAirportDataMock("LGA", 40.777245, -73.872608));
         addAirport(getAirportDataMock("MMU", 40.79935, -74.4148747));
     }
-    
+
+    /**
+     * Construct a mock airport
+     */
     private AirportData getAirportDataMock(String iata, double lat, double lon)
     {
     	AirportData ad = new AirportData();
@@ -128,6 +149,9 @@ public class WeatherRepository implements InitializingBean
     	return ad;
     }
     
+    /**
+     * When server starts, init the mock airports;
+     */
     @Override
     public void afterPropertiesSet() throws Exception 
     {

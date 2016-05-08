@@ -40,26 +40,31 @@ public class WeatherRestTests
 {
 	private RestTemplate rest = new TestRestTemplate();
 
+	// Internal repository
 	@Autowired
 	private WeatherRepository repo;
 	
+	// Json Mapper
 	@Autowired
 	private ObjectMapper mapper;
 	
+	// Test Server port
 	@Value("${server.port}")
 	int port;
 		
 	private String getBase()
 	{
+		// Base URL
 		return "http://localhost:" + port;
 	}
 	
 	@Before
 	public void init() throws Exception
 	{
+		// Always init the airports before tests
 		repo.init();
 	}
-
+	
     @Test
     public void collectPing() 
     {
@@ -72,9 +77,12 @@ public class WeatherRestTests
     {
     	DataPoint p = new DataPoint.Builder().withFirst(1).withSecond(2).withThird(3).withMean(2).withCount(1).build();
 
+    	// Bad calls (DataPointType wrong)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", p, String.class).getStatusCode().is2xxSuccessful());
+    	// Bad calls (Iata not existing)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/non/wind", p, String.class).getStatusCode().is2xxSuccessful());
     	
+    	// Good call
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", p, String.class).getStatusCode());    	
     	AirportData airport = rest.getForEntity(getBase() + "/collect/airport/BOS", AirportData.class).getBody();
     	assertNotNull(airport);
@@ -94,9 +102,11 @@ public class WeatherRestTests
     {
     	ResponseEntity<AirportData> airport;
     	
+    	// Bad call (iata doesn't exists)
         airport = rest.exchange(getBase() + "/collect/airport/ddd", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertTrue(!airport.getStatusCode().is2xxSuccessful());
         
+    	// Good call
     	airport = rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertNotNull(airport.getBody());
     }      
@@ -104,10 +114,14 @@ public class WeatherRestTests
     @Test
     public void collectAddAirportMin() 
     {
+    	// Bad call (iata length > 3)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaaa/10/100", null, String.class).getStatusCode().is2xxSuccessful());
+    	// Bad call (lat not in correct range)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/-100/100", null, String.class).getStatusCode().is2xxSuccessful());
+    	// Bad call (lon not in correct range)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/10/-190", null, String.class).getStatusCode().is2xxSuccessful());
     	
+    	// Good call
     	ResponseEntity<AirportData> airport;
     	assertTrue(rest.postForEntity(getBase() + "/collect/airport/aaa/90/180", null, String.class).getStatusCode().is2xxSuccessful());
     	airport = rest.exchange(getBase() + "/collect/airport/aaa", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
@@ -132,14 +146,18 @@ public class WeatherRestTests
     	air.setTimezone(200);
     	air.setDst("3");        //bad
     	
+    	// Bad call (iata length > 3)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
 
+    	// Bad call (icao length > 4)
     	air.setIata("MAD");
     	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
 
+    	// Bad call (dst doesn't exists)
     	air.setIcao("MADR");
     	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
 
+    	// Good call (insert new airport)
     	air.setDst("E");
     	ResponseEntity<AirportData> airport;
     	assertTrue(rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
@@ -150,6 +168,7 @@ public class WeatherRestTests
         assertTrue(airport.getBody().getLon() == 33.22);
         assertTrue(airport.getBody().getName().equals("Barajas"));
 
+        // Good call (update airport)
         air.setLat(1);
         air.setLon(9);
     	assertTrue(rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
@@ -163,8 +182,10 @@ public class WeatherRestTests
     @Test
 	public void collectDeleteAirport()
 	{
+        // Bad call (airport doesnt' exists)
     	assertTrue(rest.exchange(getBase() + "/collect/airport/PPP", HttpMethod.DELETE, HttpEntity.EMPTY, String.class).getStatusCode().is2xxSuccessful());
 
+        // Good call
     	AirportData airport = rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class).getBody();
     	assertNotNull(airport);
     	assertTrue(rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.DELETE, HttpEntity.EMPTY, String.class).getStatusCode().is2xxSuccessful());
@@ -187,14 +208,16 @@ public class WeatherRestTests
     @Test
 	public void queryWeather()
 	{
+    	// Bad call (iata doesn't exists)
 		ResponseEntity<List<AtmosphericInformation>> info = rest.exchange(getBase() + "/query/weather/AAA/0", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
 		assertTrue(!info.getStatusCode().is2xxSuccessful());
 
+    	// Good call (return same airport info)
 		info = rest.exchange(getBase() + "/query/weather/BOS/0", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
 		assertNotNull(info.getBody());
 		assertEquals(1, info.getBody().size());
 
-		
+    	// Good call (return near airports info)		
 		DataPoint p = new DataPoint.Builder().withFirst(10).withSecond(20).withThird(30).withMean(22).withCount(10).build();
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/JFK/wind", p, String.class).getStatusCode());    	
         p.setMean(40.0);
@@ -210,6 +233,8 @@ public class WeatherRestTests
     @Test
 	public void testLoader() throws Exception
 	{
+    	// Test the loader
+    	
 		String dat = WeatherRestTests.class.getResource("/airports.dat").getFile();
 		AirportLoader al = new AirportLoader();
         al.upload(new FileReader(dat));

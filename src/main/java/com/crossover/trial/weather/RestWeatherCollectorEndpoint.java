@@ -202,6 +202,9 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
 		return Response.status(Response.Status.OK).build();
     }    
 
+    /**
+     * Stops the server
+     */
     @Override
     @GET
     @Path("/exit")

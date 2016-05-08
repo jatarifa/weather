@@ -10,6 +10,9 @@ import com.crossover.trial.weather.RestWeatherCollectorEndpoint;
 @Component
 public class JerseyConfig extends ResourceConfig 
 {
+    /**
+     * Configure Jersey on Spring Boot
+     */
 	public JerseyConfig() 
 	{
 		register(RestWeatherCollectorEndpoint.class);

@@ -46,6 +46,11 @@ public class AirportLoader
         System.exit(0);
     }
     
+    /**
+     * Uploads the file
+     * 
+     * @param in FileReader with the file to be uploaded
+     */
     public void upload(FileReader in) throws IOException
     {
     	CSVFormat csvFileFormat = CSVFormat.DEFAULT.withDelimiter(',')
@@ -76,6 +81,11 @@ public class AirportLoader
     	}
     }
     
+    /**
+     * Parse each line of the file
+     * 
+     * @param record CSVRecord containing the fields of the record
+     */
     private AirportData parseAirportRegistry(CSVRecord record)
     {
 		AirportData a = new AirportData();
@@ -93,6 +103,11 @@ public class AirportLoader
 		return a;    	
     }
 
+    /**
+     * Upload a airport definition
+     * 
+     * @param a the airport
+     */
     private void uploadAirport(AirportData a)
     {
     	try
@@ -108,6 +123,12 @@ public class AirportLoader
     	}
     }
     
+    /**
+     * Check if a string represents a correct double
+     * 
+     * @param name name of the field
+     * @param d string with the double
+     */
     private Double checkDouble(String name, String d)
     {
     	try

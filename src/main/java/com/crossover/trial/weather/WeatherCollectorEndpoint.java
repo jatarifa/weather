@@ -93,6 +93,9 @@ public interface WeatherCollectorEndpoint {
     @Path("/airport/{iata}")
     Response deleteAirport(@PathParam("iata") String iata);
 
+    /**
+     * Stops the server
+     */
     @GET
     @Path("/exit")
     Response exit();

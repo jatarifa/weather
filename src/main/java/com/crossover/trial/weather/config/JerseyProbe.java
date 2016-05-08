@@ -10,6 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JerseyProbe implements ContainerRequestFilter
 {
+    /**
+     * logs each requests
+     */
 	@Override
 	public void filter(ContainerRequestContext req) throws IOException 
 	{	
