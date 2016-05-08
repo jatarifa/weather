@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response;
  *
  * @author code test administartor
  */
+@Path("/collect")
 public interface WeatherCollectorEndpoint {
 
     /**

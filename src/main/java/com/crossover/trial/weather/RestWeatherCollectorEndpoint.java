@@ -78,7 +78,13 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	try
     	{
 	    	DataPointType type = DataPointType.valueOf(pointType.toUpperCase());
-	    	if(type != null)
+	    	
+	    	if(!repo.findAirportData(iataCode).isPresent())
+	    	{
+	    		log.error("Airport doesn't exists.: {}", iataCode);
+	    		return Response.status(Response.Status.BAD_REQUEST).build();
+	    	}	    		
+	    	else if(type != null)
 	    	{
 				repo.addDataPoint(iataCode, type, mapper.readValue(dataPointJson, DataPoint.class));
 				return Response.status(Response.Status.OK).build();

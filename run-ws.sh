@@ -6,7 +6,7 @@
 
 function cleanup() {
     kill ${SERVER_PID} ${CLIENT_PID}
-    rm -f cp.txt
+    rm -f cp.txt target
 }
 
 trap cleanup EXIT

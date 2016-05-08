@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
  *
  * @author code test adminsitrator
  */
+@Path("/query")
 public interface WeatherQueryEndpoint {
 
     /**
