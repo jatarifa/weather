@@ -53,13 +53,12 @@ public class WeatherClient
         System.out.println("query.ping: " + response.readEntity(String.class));
     }
 
-    public void populate(String pointType, int first, int last, int mean, int median, int count) 
+    public void populate(String pointType, int first, int second, int third, double mean, int count) 
     {
         WebTarget path = collect.path("/weather/BOS/" + pointType);
         DataPoint dp = new DataPoint.Builder()
-                .withFirst(first).withThird(last).withMean(mean).withSecond(median).withCount(count)
+                .withFirst(first).withSecond(second).withThird(third).withMean(mean).withCount(count)
                 .build();
-        System.out.println(dp);
         path.request().post(Entity.entity(dp, "application/json"));
     }
 

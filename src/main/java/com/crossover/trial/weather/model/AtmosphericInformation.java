@@ -2,6 +2,8 @@ package com.crossover.trial.weather.model;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -34,6 +36,7 @@ public class AtmosphericInformation
     private Optional<DataPoint> cloudCover;
 
     /** the last time this data was updated, in milliseconds since UTC epoch */
+    @JsonIgnore
     private long lastUpdateTime = 0;
     
     public AtmosphericInformation()
