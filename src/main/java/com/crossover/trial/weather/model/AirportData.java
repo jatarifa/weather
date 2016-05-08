@@ -107,9 +107,9 @@ public class AirportData
 			throw new WeatherException("ICAO code not valid : " + ad.getIcao());
 		else if(ad.getDst() != null && !DST.contains(ad.getDst().toUpperCase()))
 			throw new WeatherException("DST code not valid : " + ad.getDst());
-		else if(ad.getLat() < latMin && ad.getLat() > latMax)
+		else if(ad.getLat() < latMin || ad.getLat() > latMax)
 			throw new WeatherException("Latitude error.: " + ad.getLat());
-    	else if(ad.getLon() < lonMin && ad.getLon() > lonMax)
+    	else if(ad.getLon() < lonMin || ad.getLon() > lonMax)
 			throw new WeatherException("Longitude error.: " + ad.getLon());
     }
 }

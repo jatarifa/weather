@@ -47,7 +47,7 @@ public class WeatherRepository implements InitializingBean
      */
     public Optional<AirportData> findAirportData(String iataCode) 
     {
-        return airportData.stream().filter(ap -> ap.getIata().equals(iataCode)).findFirst();
+        return airportData.stream().filter(ap -> ap.getIata().equals(iataCode.toUpperCase())).findFirst();
     }
     
     /**
@@ -70,6 +70,7 @@ public class WeatherRepository implements InitializingBean
      */
     public void addAirport(AirportData ad) 
     {
+    	ad.setIata(ad.getIata().toUpperCase());
     	AirportData.validateData(ad);
     	
     	Optional<AirportData> old = findAirportData(ad.getIata());

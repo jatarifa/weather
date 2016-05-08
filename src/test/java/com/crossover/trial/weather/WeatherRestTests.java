@@ -11,6 +11,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
@@ -63,27 +64,51 @@ public class WeatherRestTests
     public void collectUpdateWeather() 
     {
     	DataPoint p = new DataPoint.Builder().withFirst(1).withSecond(2).withThird(3).withMean(2).withCount(1).build();
-    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", p, String.class).getStatusCode());
+
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", p, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/non/wind", p, String.class).getStatusCode().is2xxSuccessful());
     	
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", p, String.class).getStatusCode());    	
     	AirportData airport = rest.getForEntity(getBase() + "/collect/airport/BOS", AirportData.class).getBody();
     	assertNotNull(airport);
     	assertEquals(p, airport.getAtmosphericInformation().getHumidity());
     }
     
     @Test
-    public void collect() 
+    public void collectGetAirports() 
     {
-    	DataPoint p = new DataPoint.Builder().withFirst(1).withSecond(2).withThird(3).withMean(2).withCount(1).build();
-    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", p, String.class).getStatusCode());
-    	
-    	AirportData airport = rest.getForEntity(getBase() + "/collect/airport/BOS", AirportData.class).getBody();
-    	assertNotNull(airport);
-    	assertEquals(p, airport.getAtmosphericInformation().getHumidity());
+        Set<String> airports = rest.exchange(getBase() + "/collect/airports", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<Set<String>>() {}).getBody();
+        assertNotNull(airports);
+        assertEquals(5, airports.size());
     }   
     
+    @Test
+    public void collectGetAirportByIATA() 
+    {
+    	ResponseEntity<AirportData> airport;
+    	
+        airport = rest.exchange(getBase() + "/collect/airport/ddd", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
+        assertTrue(!airport.getStatusCode().is2xxSuccessful());
+        
+    	airport = rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
+        assertNotNull(airport.getBody());
+    }      
     
-    
-    
+    @Test
+    public void collectAddAirportMin() 
+    {
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaaa/10/100", null, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/-100/100", null, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/10/-190", null, String.class).getStatusCode().is2xxSuccessful());
+    	
+    	ResponseEntity<AirportData> airport;
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport/aaa/90/180", null, String.class).getStatusCode().is2xxSuccessful());
+    	airport = rest.exchange(getBase() + "/collect/airport/aaa", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
+        assertTrue(airport.getBody() != null);
+        assertTrue(airport.getBody().getIata().equals("AAA"));
+        assertTrue(airport.getBody().getLat() == 90);
+        assertTrue(airport.getBody().getLon() == 180);
+    }       
     
     
     

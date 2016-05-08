@@ -84,15 +84,10 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
 	    		log.error("Airport doesn't exists.: {}", iataCode);
 	    		return Response.status(Response.Status.BAD_REQUEST).build();
 	    	}	    		
-	    	else if(type != null)
+	    	else
 	    	{
 				repo.addDataPoint(iataCode, type, mapper.readValue(dataPointJson, DataPoint.class));
 				return Response.status(Response.Status.OK).build();
-	    	}
-	    	else
-	    	{
-	    		log.error("DataPoint Type doesn't exists.: {}", pointType);
-	    		return Response.status(Response.Status.BAD_REQUEST).build();
 	    	}
     	}
     	catch(Exception e)
@@ -130,7 +125,10 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     public Response getAirport(@PathParam("iata") String iata) 
     {
     	AirportData ad = repo.findAirportData(iata).orElse(null);
-		return Response.status(Response.Status.OK).entity(ad).build();
+    	if(ad != null)
+    		return Response.status(Response.Status.OK).entity(ad).build();
+    	else
+    		return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     
@@ -152,6 +150,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	try
     	{
     		AirportData ad = new AirportData();
+    		ad.setIata(iata);
     		ad.setLat(Double.valueOf(latString));
     		ad.setLon(Double.valueOf(longString));
         	
@@ -160,6 +159,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	}
     	catch(WeatherException e)
     	{
+    		log.error("Error adding airport : " + e.getMessage());
     		return Response.status(Response.Status.BAD_REQUEST).build();
     	}
     }
