@@ -1,0 +1,14 @@
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/WeatherCollectorEndpoint.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/RestWeatherCollectorEndpoint.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/model/AtmosphericInformation.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/config/JerseyConfig.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/model/DataPointType.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/loader/AirportLoader.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/client/WeatherClient.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/model/DataPoint.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/RestWeatherQueryEndpoint.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/repo/WeatherRepository.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/exceptions/WeatherException.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/model/AirportData.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/WeatherQueryEndpoint.java
+/Users/jose/crossover/SCAAWSTarifa_JoseAntonio/src/main/java/com/crossover/trial/weather/WeatherServer.java
