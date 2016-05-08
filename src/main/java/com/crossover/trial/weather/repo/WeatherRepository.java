@@ -103,7 +103,7 @@ public class WeatherRepository implements InitializingBean
     public void updateRequestFrequency(String iata, Double radius) 
     {
         findAirportData(iata).ifPresent(d -> d.incrementRequestFrecuency());
-        radiusFreq = radiusFreq.plus(radius, radiusFreq.getOrDefault(radius, 0));    
+        radiusFreq = radiusFreq.plus(radius, radiusFreq.getOrDefault(radius, 0) + 1);    
     }
     
     public void init() 

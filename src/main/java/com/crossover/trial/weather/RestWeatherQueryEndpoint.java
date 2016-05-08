@@ -110,7 +110,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
     	if(!airport.isPresent())
         	return Response.status(Response.Status.OK).entity(Collections.emptyList()).build();
 
-		double radius = Optional.of(radiusString).map(r -> Double.valueOf(r)).orElse(0.0);
+		double radius = Optional.ofNullable(radiusString).map(r -> Double.valueOf(r)).orElse(0.0);
         repo.updateRequestFrequency(iata, radius);
 
         List<AtmosphericInformation> retval;
@@ -119,8 +119,8 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
         else 
         	retval = repo.getAirportData()
         				 .stream()
-        				 .filter(a -> airport.get().calculateDistanceTo(a) <= radius)
         				 .filter(a -> a.getAtmosphericInformation().notEmpty())
+        				 .filter(a -> airport.get().calculateDistanceTo(a) <= radius)
         				 .map(a -> a.getAtmosphericInformation())
         				 .collect(Collectors.toList());
         
