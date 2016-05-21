@@ -1,7 +1,5 @@
 package com.crossover.trial.weather.model;
 
-import com.crossover.trial.weather.exceptions.WeatherException;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,16 +15,24 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class DataPoint
+public class DataPoint implements DeepCloned
 {
-	private int first = 0;
-	private int second = 0;
-	private int third = 0;
-	private double mean = 0.0;
-	private int count = 0;
+	private static final long serialVersionUID = 3549339775827934548L;
 
-    @SuppressWarnings("unused")
-	private DataPoint() {}
+	private int first;
+	private int second;
+	private int third;
+	private double mean;
+	private int count;
+
+	public DataPoint() 
+	{
+		first = 0;
+		second = 0;
+		third = 0;
+		mean = 0.0;
+		count = 0;		
+	}
 
     protected DataPoint(int first, int second, int third, double mean, int count) 
     {
@@ -35,18 +41,6 @@ public class DataPoint
         this.third = third;
         this.mean = mean;
         this.count = count;
-    }
-    
-    public static DataPoint copy(DataPoint orig)
-    {
-    	try
-    	{
-        	return (DataPoint)orig.clone();    		
-    	}
-    	catch(CloneNotSupportedException e)
-    	{
-    		throw new WeatherException(e);
-    	}
     }
     
     public static class Builder 
