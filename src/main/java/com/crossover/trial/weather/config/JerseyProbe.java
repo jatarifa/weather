@@ -16,7 +16,16 @@ public class JerseyProbe implements ContainerRequestFilter
 	@Override
 	public void filter(ContainerRequestContext req) throws IOException 
 	{	
-		String query = req.getUriInfo().getRequestUri().toString().substring(req.getUriInfo().getBaseUri().toString().length() - 1);
+		int pos = req.getUriInfo()
+					 .getBaseUri()
+					 .toString()
+					 .length() - 1;
+		
+		String query = req.getUriInfo()
+						  .getRequestUri()
+						  .toString()
+						  .substring(pos);
+
 		log.info(query);
 	}
 }

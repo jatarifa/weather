@@ -18,12 +18,12 @@ import lombok.AccessLevel;
 @EqualsAndHashCode
 public class AirportData 
 {
-	private static final List<String> DST = Arrays.asList("E", "A", "S", "O", "Z", "N", "U");
+	private static final List<String> DST_LIST = Arrays.asList("E", "A", "S", "O", "Z", "N", "U");
 
-    private static final Double latMin = -90.0;
-    private static final Double latMax = 90.0;
-    private static final Double lonMin = -180.0;
-    private static final Double lonMax = 180.0;
+    private static final Double LAT_MIN = -90.0;
+    private static final Double LAT_MAX = 90.0;
+    private static final Double LON_MIN = -180.0;
+    private static final Double LON_MAX = 180.0;
     
     /** earth radius in KM */
     private static final double R = 6372.8;
@@ -68,26 +68,22 @@ public class AirportData
     	setLon(d.getLon());
     	setDst(d.getDst());
     	requestFrequency = d.getRequestFrequency();
-    	atmosphericInformation = d.getAtmosphericInformation().clone();
+    	atmosphericInformation = AtmosphericInformation.copy(d.getAtmosphericInformation());
     }
     
-    public AirportData clone()
+    public static AirportData copy(AirportData orig)
     {
-    	AirportData ad = new AirportData();
-    	ad.setName(name);
-    	ad.setCity(city);
-    	ad.setCountry(country);
-    	ad.setIata(iata);
-    	ad.setIcao(icao);
-    	ad.setAlt(alt);
-    	ad.setLat(lat);
-    	ad.setLon(lon);
-    	ad.setTimezone(timezone);
-    	ad.setDst(dst);
-    	ad.requestFrequency = requestFrequency;
-    	ad.atmosphericInformation = atmosphericInformation.clone();
+    	try
+    	{
+    		AirportData c = (AirportData)orig.clone();
+    		c.atmosphericInformation = AtmosphericInformation.copy(orig.atmosphericInformation);
+    		return c;
+    	}
+    	catch(CloneNotSupportedException e)
+    	{
+    		throw new WeatherException(e);
+    	}
     	
-    	return ad;
     }
     
     /**
@@ -117,11 +113,11 @@ public class AirportData
 			throw new WeatherException("IATA/FAA code not valid : " + ad.getIata());
 		else if(ad.getIcao() != null && ad.getIcao().trim().length() > 4)
 			throw new WeatherException("ICAO code not valid : " + ad.getIcao());
-		else if(ad.getDst() != null && !DST.contains(ad.getDst().toUpperCase()))
+		else if(ad.getDst() != null && !DST_LIST.contains(ad.getDst().toUpperCase()))
 			throw new WeatherException("DST code not valid : " + ad.getDst());
-		else if(ad.getLat() < latMin || ad.getLat() > latMax)
+		else if(ad.getLat() < LAT_MIN || ad.getLat() > LAT_MAX)
 			throw new WeatherException("Latitude error.: " + ad.getLat());
-    	else if(ad.getLon() < lonMin || ad.getLon() > lonMax)
+    	else if(ad.getLon() < LON_MIN || ad.getLon() > LON_MAX)
 			throw new WeatherException("Longitude error.: " + ad.getLon());
     }
 }

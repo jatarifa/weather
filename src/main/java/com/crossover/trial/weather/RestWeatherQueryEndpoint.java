@@ -86,7 +86,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 		}
 		catch(Exception e)
 		{
-			log.error("Ping error: ", e.getMessage());
+			log.error("Ping error.", e);
 			return null;
 		}
 	}
@@ -115,7 +115,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
         	return Response.status(Response.Status.BAD_REQUEST).entity(Collections.emptyList()).build();
     	}
 
-		double radius = Optional.ofNullable(radiusString).map(r -> Double.valueOf(r)).orElse(0.0);
+		double radius = Optional.ofNullable(radiusString).map(Double::valueOf).orElse(0.0);
 		if(radius < 0)
 		{
     		log.error("Incorrect radius. : {}", radiusString);
@@ -125,7 +125,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
         repo.updateRequestFrequency(iata, radius);
 
         List<AtmosphericInformation> retval;
-        if (radius == 0.0) 
+        if (Double.compare(radius, 0.0) == 0) 
         	retval = Arrays.asList(airport.get().getAtmosphericInformation());
         else 
         {
@@ -136,7 +136,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
         				 .map(a -> a.getAtmosphericInformation())
         				 .collect(Collectors.toList());
         	
-        	if(retval.size() == 0)
+        	if(retval.isEmpty())
         		retval = Arrays.asList(airport.get().getAtmosphericInformation());
         }
                 

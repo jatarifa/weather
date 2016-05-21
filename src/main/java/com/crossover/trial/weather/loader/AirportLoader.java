@@ -28,22 +28,26 @@ import lombok.extern.slf4j.Slf4j;
 public class AirportLoader 
 {
 	private static final String BASE_SERVER = "http://localhost:9090";
+	private static final String OK = "OK";
 	
     private final WebTarget collect = ClientBuilder.newClient().target(BASE_SERVER + "/collect");
     
-    public static void main(String args[]) throws IOException
+    public static void main(String [] args) throws IOException
     {
-        File airportDataFile = new File(args[0]);
-        if (!airportDataFile.exists() || airportDataFile.length() == 0) 
-        {
-            log.error(airportDataFile + " is not a valid input");
-            System.exit(1);
-        }
-
-        AirportLoader al = new AirportLoader();
-        al.upload(new FileReader(airportDataFile));
-        
-        System.exit(0);
+    	if(args.length > 0)
+    	{
+	        File airportDataFile = new File(args[0]);
+	        if (!airportDataFile.exists() || airportDataFile.length() == 0) 
+	        {
+	            log.error(airportDataFile + " is not a valid input");
+	            System.exit(1);
+	        }
+	
+	        AirportLoader al = new AirportLoader();
+	        al.upload(new FileReader(airportDataFile));
+	        
+	        System.exit(0);
+    	}
     }
     
     /**
@@ -75,7 +79,7 @@ public class AirportLoader
 	    		}
 	    		catch(WeatherException e)
 	    		{
-	    			log.error("Error parsing file : {}", e.getMessage());
+	    			log.error("Error parsing file.", e);
 	    		}
 	    	}
     	}
@@ -110,17 +114,10 @@ public class AirportLoader
      */
     private void uploadAirport(AirportData a)
     {
-    	try
-    	{
-			WebTarget path = collect.path("/airport");
-			Response post = path.request().post(Entity.entity(a, "application/json"));
-			if(!post.getStatusInfo().getReasonPhrase().equalsIgnoreCase("OK"))
-				throw new Exception(post.getStatusInfo().getReasonPhrase());
-    	}
-    	catch(Exception e)
-    	{
-			throw new WeatherException("Airport upload fail : " + e.getMessage());    	    		
-    	}
+		WebTarget path = collect.path("/airport");
+		Response post = path.request().post(Entity.entity(a, "application/json"));
+		if(!post.getStatusInfo().getReasonPhrase().equalsIgnoreCase(OK))
+			throw new WeatherException("Airport upload fail : " + post.getStatusInfo().getReasonPhrase());
     }
     
     /**

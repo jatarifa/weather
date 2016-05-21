@@ -6,7 +6,10 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
+import com.crossover.trial.weather.exceptions.WeatherException;
 import com.crossover.trial.weather.model.DataPoint;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A reference implementation for the weather client. Consumers of the REST API can look at WeatherClient
@@ -15,6 +18,7 @@ import com.crossover.trial.weather.model.DataPoint;
  *
  * @author code test administrator
  */
+@Slf4j
 public class WeatherClient 
 {
     private static final String BASE_URI = "http://localhost:9090";
@@ -36,21 +40,21 @@ public class WeatherClient
     {
         WebTarget path = collect.path("/ping");
         Response response = path.request().get();
-        System.out.print("collect.ping: " + response.readEntity(String.class) + "\n");
+        log.info("collect.ping: {}", response.readEntity(String.class) + "\n");
     }
 
     public void query(String iata) 
     {
         WebTarget path = query.path("/weather/" + iata + "/0");
         Response response = path.request().get();
-        System.out.println("query." + iata + ".0: " + response.readEntity(String.class));
+        log.info("query.{}.0: {}", iata, response.readEntity(String.class));
     }
 
     public void pingQuery() 
     {
         WebTarget path = query.path("/ping");
         Response response = path.request().get();
-        System.out.println("query.ping: " + response.readEntity(String.class));
+        log.info("query.ping: {}", response.readEntity(String.class));
     }
 
     public void populate(String pointType, int first, int second, int third, double mean, int count) 
@@ -68,7 +72,10 @@ public class WeatherClient
         {
             collect.path("/exit").request().get();
         } 
-        catch (Throwable t) {}
+        catch (Exception e) 
+        {
+        	throw new WeatherException(e);
+        }
     }
 
     public static void main(String[] args) 
@@ -86,7 +93,7 @@ public class WeatherClient
         wc.pingQuery();
         wc.exit();
         
-        System.out.print("complete");
+        log.info("complete");
         System.exit(0);
     }
 }

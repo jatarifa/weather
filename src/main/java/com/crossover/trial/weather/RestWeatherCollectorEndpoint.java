@@ -92,7 +92,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	}
     	catch(Exception e)
     	{
-    		log.error("UpdateWeather error: {}", e.getMessage());
+    		log.error("UpdateWeather error.", e);
     		return Response.status(Response.Status.BAD_REQUEST).build();
     	}
 	}
@@ -159,7 +159,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	}
     	catch(WeatherException e)
     	{
-    		log.error("Error adding airport : " + e.getMessage());
+    		log.error("Error adding airport.", e);
     		return Response.status(Response.Status.BAD_REQUEST).build();
     	}
     }
@@ -182,7 +182,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	}
     	catch(Exception e)
     	{
-    		log.error("Error adding airport : " + e.getMessage());
+    		log.error("Error adding airport.", e);
     		return Response.status(Response.Status.BAD_REQUEST).build();
     	}
     }

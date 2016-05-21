@@ -1,5 +1,7 @@
 package com.crossover.trial.weather.model;
 
+import com.crossover.trial.weather.exceptions.WeatherException;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,13 +36,20 @@ public class DataPoint
         this.mean = mean;
         this.count = count;
     }
-
-    public DataPoint clone()
+    
+    public static DataPoint copy(DataPoint orig)
     {
-    	return new Builder().withFirst(first).withSecond(second).withThird(third).withMean(mean).withCount(count).build();
+    	try
+    	{
+        	return (DataPoint)orig.clone();    		
+    	}
+    	catch(CloneNotSupportedException e)
+    	{
+    		throw new WeatherException(e);
+    	}
     }
     
-    static public class Builder 
+    public static class Builder 
     {
     	private int first;
     	private int second;

@@ -2,6 +2,7 @@ package com.crossover.trial.weather.model;
 
 import java.util.Optional;
 
+import com.crossover.trial.weather.exceptions.WeatherException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AccessLevel;
@@ -140,15 +141,17 @@ public class AtmosphericInformation
     {
     	return notEmpty() && lastUpdateTime > System.currentTimeMillis() - DAY_MILLIS;
     }
-
-    public AtmosphericInformation clone()
+    
+    public static AtmosphericInformation copy(AtmosphericInformation orig)
     {
-    	return new AtmosphericInformation(temperature.map(a -> a.clone()).orElse(null), 
-    									  wind.map(a -> a.clone()).orElse(null), 
-    									  humidity.map(a -> a.clone()).orElse(null), 
-    									  precipitation.map(a -> a.clone()).orElse(null), 
-    									  pressure.map(a -> a.clone()).orElse(null), 
-    									  cloudCover.map(a -> a.clone()).orElse(null));
+    	try
+    	{
+    		return (AtmosphericInformation)orig.clone();
+    	}
+    	catch(CloneNotSupportedException e)
+    	{
+    		throw new WeatherException(e);
+    	}
     }
     
     /**
@@ -159,7 +162,7 @@ public class AtmosphericInformation
      */
     public synchronized void updateAtmosphericInformation(DataPointType pointType, DataPoint point)
     {
-    	Optional<DataPoint> dp = Optional.ofNullable(point.clone());
+    	Optional<DataPoint> dp = Optional.ofNullable(DataPoint.copy(point));
 
     	switch(pointType)
     	{
@@ -181,6 +184,8 @@ public class AtmosphericInformation
     		case PRECIPITATION:
     	    	dp.filter(d -> d.getMean() >=0 && d.getMean() < 100).ifPresent(d -> precipitation = dp);
                 break;
+            default:
+            	return;
     	}
     	
     	touch();
