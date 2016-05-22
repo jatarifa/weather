@@ -9,8 +9,6 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 import com.crossover.trial.weather.exceptions.WeatherException;
-import com.crossover.trial.weather.model.AirportData;
-import com.crossover.trial.weather.model.AtmosphericInformation;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
