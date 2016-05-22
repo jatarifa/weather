@@ -86,7 +86,7 @@ public class AtmosphericInformation implements DeepCloned
      */
     public synchronized void updateAtmosphericInformation(DataPointType pointType, DataPoint point)
     {
-    	Optional<DataPoint> dp = Optional.ofNullable(DeepCloned.copy(point));
+    	Optional<DataPoint> dp = Optional.ofNullable(point.copy());
 
     	switch(pointType)
     	{

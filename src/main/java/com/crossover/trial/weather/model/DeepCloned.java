@@ -6,8 +6,9 @@ import org.apache.commons.lang3.SerializationUtils;
 
 public interface DeepCloned extends Serializable
 {
-	public static <T extends Serializable> T copy(T orig)
+	@SuppressWarnings("unchecked")
+	public default <T extends DeepCloned> T copy()
 	{
-		return SerializationUtils.clone(orig);
+		return SerializationUtils.clone((T)this);
 	}
 }
