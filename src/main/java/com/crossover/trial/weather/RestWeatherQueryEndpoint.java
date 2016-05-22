@@ -1,6 +1,7 @@
 package com.crossover.trial.weather;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,22 +138,19 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 		
         repo.updateRequestFrequency(iata, radius);
 
-        List<AtmosphericInformation> retval;
-        if (Double.compare(radius, MIN_RADIUS) == 0) 
-        	retval = Arrays.asList(airport.get().atmosphericInformation());
-        else 
+        List<AtmosphericInformation> retval = Collections.emptyList();
+        if (Double.compare(radius, MIN_RADIUS) > 0) 
         {
         	retval = repo.getAirports()
         				 .stream()
         				 .filter(a -> a.atmosphericInformation().notEmpty())
-        				 .filter(a -> airport.get().calculateDistanceTo(a) <= radius)
+        				 .filter(a -> Double.compare(airport.get().calculateDistanceTo(a), radius) <= 0)
         				 .map(a -> a.atmosphericInformation())
         				 .collect(Collectors.toList());
-        	
-        	if(retval.isEmpty())
-        		retval = Arrays.asList(airport.get()
-        									  .atmosphericInformation());
         }
+        
+    	if(retval.isEmpty())
+    		retval = Arrays.asList(airport.get().atmosphericInformation());
                 
     	return Response.status(Response.Status.OK).entity(retval).build();
 	}
