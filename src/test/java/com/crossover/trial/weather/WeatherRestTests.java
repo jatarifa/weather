@@ -28,10 +28,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.crossover.trial.weather.loader.AirportLoader;
 import com.crossover.trial.weather.model.AirportData;
-import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 import com.crossover.trial.weather.model.AtmosphericInformation;
 import com.crossover.trial.weather.model.DataPoint;
-import com.crossover.trial.weather.model.DataPoint.DataPointBuilder;
 import com.crossover.trial.weather.repo.WeatherRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -78,8 +76,7 @@ public class WeatherRestTests
     @Test
     public void collectUpdateWeather() 
     {
-    	DataPointBuilder p = new DataPointBuilder().withFirst(1).withSecond(2).withThird(3).withMean(2).withCount(1);
-    	DataPoint dp = p.build();
+    	DataPoint dp = DataPoint.builder().first(1).second(2).third(3).mean(2).count(1).build();
 
     	// Bad calls (DataPointType wrong)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", dp, String.class).getStatusCode().is2xxSuccessful());
@@ -90,7 +87,7 @@ public class WeatherRestTests
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", dp, String.class).getStatusCode());    	
     	AirportData airport = rest.getForEntity(getBase() + "/collect/airport/BOS", AirportData.class).getBody();
     	assertNotNull(airport);
-    	assertEquals(dp, airport.getAtmosphericInformation().getHumidity());
+    	assertEquals(dp, airport.atmosphericInformation().humidity());
     }
     
     @Test
@@ -130,57 +127,57 @@ public class WeatherRestTests
     	assertTrue(rest.postForEntity(getBase() + "/collect/airport/aaa/90/180", null, String.class).getStatusCode().is2xxSuccessful());
     	airport = rest.exchange(getBase() + "/collect/airport/aaa", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertTrue(airport.getBody() != null);
-        assertTrue(airport.getBody().getIata().equals("AAA"));
-        assertTrue(airport.getBody().getLat() == 90);
-        assertTrue(airport.getBody().getLon() == 180);
+        assertTrue(airport.getBody().iata().equals("AAA"));
+        assertTrue(airport.getBody().lat() == 90);
+        assertTrue(airport.getBody().lon() == 180);
     }       
     
     @Test
     public void collectAddAirport() 
     {
-    	AirportDataBuilder b = new AirportDataBuilder();
-    	b.withName("Barajas");
-    	b.withCity("Madrid");
-    	b.withCountry("Spain");
-    	b.withIata("KKFKFK");  //bad
-    	b.withIcao("MADRDD");  //bad
-    	b.withAlt(1000.23);
-    	b.withLat(10.2);
-    	b.withLon(33.22);
-    	b.withTimezone(200);
-    	b.withDst("3");        //bad
-    	
+    	MockAirportData b = new MockAirportData();
+    	b.name = "Barajas";
+    	b.city = "Madrid";
+    	b.country = "Spain";
+    	b.iata = "ffffsss";  //bad
+    	b.icao = "madridd";  //bad
+    	b.alt = 1000.23;
+    	b.lat = 10.2;
+    	b.lon = 33.22;
+    	b.timezone = 200.0;
+    	b.dst = "3";         //bad
+
     	// Bad call (iata length > 3)
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b, String.class).getStatusCode().is2xxSuccessful());
 
     	// Bad call (icao length > 4)
-    	b.withIata("MAD");
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
+    	b.iata = "MAD";
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b, String.class).getStatusCode().is2xxSuccessful());
 
     	// Bad call (dst doesn't exists)
-    	b.withIcao("MADR");
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
+    	b.icao = "MADR";
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b, String.class).getStatusCode().is2xxSuccessful());
 
     	// Good call (insert new airport)
-    	b.withDst("E");
+    	b.dst = "E";
     	ResponseEntity<AirportData> airport;
-    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", b, String.class).getStatusCode().is2xxSuccessful());
     	airport = rest.exchange(getBase() + "/collect/airport/MAD", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertTrue(airport.getBody() != null);
-        assertTrue(airport.getBody().getIata().equals("MAD"));
-        assertTrue(airport.getBody().getLat() == 10.2);
-        assertTrue(airport.getBody().getLon() == 33.22);
-        assertTrue(airport.getBody().getName().equals("Barajas"));
+        assertTrue(airport.getBody().iata().equals("MAD"));
+        assertTrue(airport.getBody().lat() == 10.2);
+        assertTrue(airport.getBody().lon() == 33.22);
+        assertTrue(airport.getBody().name().equals("Barajas"));
 
         // Good call (update airport)
-        b.withLat(1);
-        b.withLon(9);
-    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
+        b.lat = 1;
+        b.lon = 9;
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", b, String.class).getStatusCode().is2xxSuccessful());
     	airport = rest.exchange(getBase() + "/collect/airport/MAD", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertTrue(airport.getBody() != null);
-        assertTrue(airport.getBody().getIata().equals("MAD"));
-        assertTrue(airport.getBody().getLat() == 1);
-        assertTrue(airport.getBody().getLon() == 9);
+        assertTrue(airport.getBody().iata().equals("MAD"));
+        assertTrue(airport.getBody().lat() == 1);
+        assertTrue(airport.getBody().lon() == 9);
     }       
 
     @Test
@@ -222,12 +219,12 @@ public class WeatherRestTests
 		assertEquals(1, info.getBody().size());
 
     	// Good call (return near airports info)		
-		DataPointBuilder p = new DataPointBuilder().withFirst(10).withSecond(20).withThird(30).withMean(22).withCount(10);
+		DataPoint.Builder p = DataPoint.builder().first(10).second(20).third(30).mean(22).count(10);
 		
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/JFK/wind", p.build(), String.class).getStatusCode());    	
-        p.withMean(40.0);
+        p.mean(40.0);
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/EWR/wind", p.build(), String.class).getStatusCode());    	
-        p.withMean(30.0);
+        p.mean(30.0);
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/LGA/wind", p.build(), String.class).getStatusCode());
 		
 		info = rest.exchange(getBase() + "/query/weather/JFK/200", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
@@ -248,4 +245,19 @@ public class WeatherRestTests
         assertNotNull(airports);
         assertEquals(10, airports.size());
 	}
+    
+    // Mock class without validations
+    protected static class MockAirportData
+    {
+    	public String iata;
+    	public double lat;
+        public double lon;
+    	public String icao;
+        public String name;
+        public String city;
+        public String country;
+        public Double alt;
+        public Double timezone;
+        public String dst;
+    }
 }

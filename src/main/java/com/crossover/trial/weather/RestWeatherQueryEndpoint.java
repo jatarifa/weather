@@ -35,6 +35,9 @@ import lombok.extern.slf4j.Slf4j;
 @Path("/query")
 public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 {
+	private static final Double MAX_HIST = 999.0;
+	private static final Double MIN_RADIUS = 0.0;
+	
     @Autowired
     private ObjectMapper mapper;
 
@@ -57,28 +60,43 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 		{
 	        Map<String, Object> retval = new HashMap<>();
 	
-	        long dataSize = repo.getAirportData().stream().filter(a -> a.getAtmosphericInformation().recentReaded()).count();
+	        long dataSize = repo.getAirports()
+	        					.stream()
+	        					.filter(a -> a.atmosphericInformation().recentReaded())
+	        					.count();
+	        
 	        retval.put("datasize", dataSize);
-	
+	        
 	
 	        int freqSize = repo.getAirportData().size();
 	        Map<String, Double> freq = new HashMap<>();
 	        if(freqSize != 0)
 	        {
-		        repo.getAirportData().stream().forEach(a -> {
-		            double frac = (double)a.getRequestFrequency() / freqSize;
-		            freq.put(a.getIata(), frac);        	
-		        });
+		        repo.getAirportData()
+		        	.stream()
+		        	.forEach(a -> {
+			            double frac = (double)a.getValue() / freqSize;
+			            freq.put(a.getKey().iata(), frac);        	
+			        });
 	        }
 	        retval.put("iata_freq", freq);
 	
 	   
-	        int m = repo.getRadiusFreq().keySet().stream().max(Double::compare).orElse(1000.0).intValue() + 1;
+	        int m = repo.getRadiusFreq()
+	        			.keySet()
+	        			.stream()
+	        			.max(Double::compare)
+	        			.orElse(MAX_HIST)
+	        			.intValue() + 1;
+	        
 	        int[] hist = new int[m];
-	        repo.getRadiusFreq().entrySet().stream().forEach(k -> {
-	            int i = k.getKey().intValue() % 10;
-	            hist[i] += k.getValue();
-	        });        
+	        repo.getRadiusFreq()
+	        	.entrySet()
+	        	.stream()
+	        	.forEach(k -> {
+		            int i = k.getKey().intValue() % 10;
+		            hist[i] += k.getValue();
+		        });
 	        retval.put("radius_freq", hist);
 	        
 	        return mapper.writeValueAsString(retval);
@@ -107,30 +125,33 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
     public Response weather(@PathParam("iata") String iata, 
     						@PathParam("radius") String radiusString)
 	{
-		Optional<AirportData> airport = repo.findAirportData(iata);
+		Optional<AirportData> airport = repo.findAirport(iata);
     	if(!airport.isPresent())
         	return Response.status(Response.Status.NOT_FOUND).build();
 
-		double radius = Optional.ofNullable(radiusString).map(Double::valueOf).orElse(0.0);
+		double radius = Optional.ofNullable(radiusString)
+								.map(Double::valueOf)
+								.orElse(MIN_RADIUS);
 		if(radius < 0)
         	return Response.status(Response.Status.NOT_FOUND).build();
 		
         repo.updateRequestFrequency(iata, radius);
 
         List<AtmosphericInformation> retval;
-        if (Double.compare(radius, 0.0) == 0) 
-        	retval = Arrays.asList(airport.get().getAtmosphericInformation());
+        if (Double.compare(radius, MIN_RADIUS) == 0) 
+        	retval = Arrays.asList(airport.get().atmosphericInformation());
         else 
         {
-        	retval = repo.getAirportData()
+        	retval = repo.getAirports()
         				 .stream()
-        				 .filter(a -> a.getAtmosphericInformation().notEmpty())
+        				 .filter(a -> a.atmosphericInformation().notEmpty())
         				 .filter(a -> airport.get().calculateDistanceTo(a) <= radius)
-        				 .map(a -> a.getAtmosphericInformation())
+        				 .map(a -> a.atmosphericInformation())
         				 .collect(Collectors.toList());
         	
         	if(retval.isEmpty())
-        		retval = Arrays.asList(airport.get().getAtmosphericInformation());
+        		retval = Arrays.asList(airport.get()
+        									  .atmosphericInformation());
         }
                 
     	return Response.status(Response.Status.OK).entity(retval).build();

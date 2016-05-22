@@ -1,19 +1,17 @@
 package com.crossover.trial.weather.repo;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.pcollections.HashPMap;
 import org.pcollections.HashTreePMap;
-import org.pcollections.HashTreePSet;
-import org.pcollections.MapPSet;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Repository;
 
 import com.crossover.trial.weather.model.AirportData;
-import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.model.DataPointType;
 
@@ -21,19 +19,29 @@ import com.crossover.trial.weather.model.DataPointType;
 public class WeatherRepository implements InitializingBean
 {    
 	// Immutable and Thread-safe HashMap of airports
-	private MapPSet<AirportData> airportData = HashTreePSet.empty();
+	private HashPMap<AirportData, Integer> airportData = HashTreePMap.empty();
 
 	// Immutable and Thread-safe HashMap of frecuencies
     private HashPMap<Double, Integer> radiusFreq = HashTreePMap.empty();
+
+    /**
+     * Gets all the airports data.
+     *
+     * @return set of airports
+     */
+    public Set<Map.Entry<AirportData, Integer>> getAirportData() 
+    {
+    	return airportData.entrySet();
+	}
 
     /**
      * Gets all the airports.
      *
      * @return set of airports
      */
-    public Set<AirportData> getAirportData() 
+    public Set<AirportData> getAirports() 
     {
-    	return airportData;
+    	return airportData.keySet();
 	}
 
     /**
@@ -51,20 +59,20 @@ public class WeatherRepository implements InitializingBean
      *
      * @return set of iata codes
      */
-    public Set<String> getAirports()
+    public Set<String> getAirportCodes()
     {
-    	return airportData.stream().map(a -> a.getIata()).collect(Collectors.toSet());
+    	return airportData.keySet().stream().map(a -> a.iata()).collect(Collectors.toSet());
     }
     
     /**
-     * Given an iataCode find the airport data
+     * Given an iataCode find the airport
      *
      * @param iataCode as a string
-     * @return airport data or empty if not found
+     * @return airport or empty if not found
      */
-    public Optional<AirportData> findAirportData(String iataCode) 
+    public Optional<AirportData> findAirport(String iataCode) 
     {
-        return airportData.stream().filter(ap -> ap.getIata().equalsIgnoreCase(iataCode)).findFirst();
+    	return findAirportData(iataCode).map(k -> k.getKey());
     }
     
     /**
@@ -77,7 +85,11 @@ public class WeatherRepository implements InitializingBean
      */
     public void addDataPoint(String iataCode, DataPointType pointType, DataPoint dp) 
     {
-    	findAirportData(iataCode).ifPresent(a -> a.getAtmosphericInformation().updateAtmosphericInformation(pointType, dp));
+    	Optional<Map.Entry<AirportData, Integer>> data = findAirportData(iataCode);
+    	
+    	data.flatMap(a -> a.getKey()
+    				       .withDataPointToAtmosphereInformation(pointType, dp))
+    		.ifPresent(a -> airportData = airportData.plus(a, data.get().getValue()));
     }
 
     /**
@@ -87,11 +99,9 @@ public class WeatherRepository implements InitializingBean
      */
     public void addAirport(AirportData ad) 
     {
-    	ad.validate();
-    	airportData = findAirportData(ad.getIata())
-    						.map(airportData::minus)
-    						.orElse(airportData)
-    						.plus(ad);
+    	airportData = findAirportData(ad.iata())
+    						.map(a -> airportData.plus(ad, a.getValue()))
+    						.orElse(airportData.plus(ad, 0));
     }   
 
     /**
@@ -102,7 +112,7 @@ public class WeatherRepository implements InitializingBean
      */
     public void deleteAirport(String iataCode)
     {
-    	findAirportData(iataCode).ifPresent(a -> airportData = airportData.minus(a));
+    	findAirportData(iataCode).ifPresent(a -> airportData = airportData.minus(a.getKey()));
     }
     
     /**
@@ -113,16 +123,40 @@ public class WeatherRepository implements InitializingBean
      */
     public void updateRequestFrequency(String iata, Double radius) 
     {
-        findAirportData(iata).ifPresent(d -> d.incrementRequestFrecuency());
-        radiusFreq = radiusFreq.plus(radius, radiusFreq.getOrDefault(radius, 0) + 1);    
+        findAirportData(iata).ifPresent(d -> {
+        	airportData = airportData.plus(d.getKey(), d.getValue() + 1);
+            radiusFreq = radiusFreq.plus(radius, radiusFreq.getOrDefault(radius, 0) + 1);
+        });
     }
     
     /**
-     * Inits the mocked airports
+     * Given an iataCode find the airport data (airport and frequency)
+     *
+     * @param iataCode as a string
+     * @return airport data or empty if not found
      */
+    protected Optional<Entry<AirportData, Integer>> findAirportData(String iataCode) 
+    {
+        return airportData.entrySet()
+        				  .stream()
+        				  .filter(ap -> ap.getKey()
+        						   		  .iata()
+        						   		  .equalsIgnoreCase(iataCode))
+        				  .findFirst();
+    }
+   
+    /**
+     * When server starts, init the mock airports;
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception 
+    {
+    	init();
+    }
+    
     public void init() 
     {
-        airportData = HashTreePSet.empty();
+        airportData = HashTreePMap.empty();
         radiusFreq = HashTreePMap.empty();
 		
         addAirport(buildData("BOS", 42.364347, -71.005181));
@@ -132,21 +166,8 @@ public class WeatherRepository implements InitializingBean
         addAirport(buildData("MMU", 40.79935,  -74.4148747));
     }
     
-    private AirportData buildData(String iata, double lat, double lon)
+    protected AirportData buildData(String iata, double lat, double lon)
     {
-		return new AirportDataBuilder()
-						.withIata(iata)
-						.withLat(lat)
-						.withLon(lon)
-						.build();
-    }
-    
-    /**
-     * When server starts, init the mock airports;
-     */
-    @Override
-    public void afterPropertiesSet() throws Exception 
-    {
-    	init();
+		return AirportData.builder().iata(iata).lat(lat).lon(lon).build();
     }
 }

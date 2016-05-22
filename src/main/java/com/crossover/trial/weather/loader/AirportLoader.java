@@ -16,7 +16,6 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.crossover.trial.weather.exceptions.WeatherException;
 import com.crossover.trial.weather.model.AirportData;
-import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,7 +75,7 @@ public class AirportLoader
 		    		AirportData a = parseAirportRegistry(record);
 		    		uploadAirport(a);
 		    		
-		    		log.info("Airport {} loaded.",  a.getIata());
+		    		log.info("Airport {} loaded.",  a.iata());
 	    		}
 	    		catch(WeatherException e)
 	    		{
@@ -91,21 +90,21 @@ public class AirportLoader
      * 
      * @param record CSVRecord containing the fields of the record
      */
-    private AirportData parseAirportRegistry(CSVRecord record)
+    protected AirportData parseAirportRegistry(CSVRecord record)
     {
     	if(record.size() == RECORDS_IN_A_ROW)
     	{
-			AirportDataBuilder a = new AirportDataBuilder();
-			a.withName(record.get(1));
-			a.withCity(record.get(2));
-			a.withCountry(record.get(3));
-			a.withIata(record.get(4));
-			a.withIcao(record.get(5));
-			a.withLat(checkDouble("Latitude", record.get(6)));
-			a.withLon(checkDouble("Longitude", record.get(7)));
-			a.withAlt(checkDouble("Altitude", record.get(8)));
-			a.withTimezone(checkDouble("Timezone", record.get(9)));
-			a.withDst(record.get(10));
+			AirportData.Builder a = AirportData.builder();
+			a.name(record.get(1));
+			a.city(record.get(2));
+			a.country(record.get(3));
+			a.iata(record.get(4));
+			a.icao(record.get(5));
+			a.lat(checkDouble("Latitude", record.get(6)));
+			a.lon(checkDouble("Longitude", record.get(7)));
+			a.alt(checkDouble("Altitude", record.get(8)));
+			a.timezone(checkDouble("Timezone", record.get(9)));
+			a.dst(record.get(10));
 			
 			return a.build();    	
     	}
@@ -118,7 +117,7 @@ public class AirportLoader
      * 
      * @param a the airport
      */
-    private void uploadAirport(AirportData a)
+    protected void uploadAirport(AirportData a)
     {
 		WebTarget path = collect.path("/airport");
 		Response post = path.request().post(Entity.entity(a, "application/json"));
@@ -132,7 +131,7 @@ public class AirportLoader
      * @param name name of the field
      * @param d string with the double
      */
-    private Double checkDouble(String name, String d)
+    protected Double checkDouble(String name, String d)
     {
     	try
     	{

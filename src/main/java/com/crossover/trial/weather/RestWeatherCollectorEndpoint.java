@@ -1,6 +1,5 @@
 package com.crossover.trial.weather;
 
-import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.DELETE;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import com.crossover.trial.weather.exceptions.WeatherException;
 import com.crossover.trial.weather.model.AirportData;
-import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.model.DataPointType;
 import com.crossover.trial.weather.repo.WeatherRepository;
@@ -81,7 +79,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	{
 	    	DataPointType type = DataPointType.valueOf(pointType.toUpperCase());
 	    	
-	    	if(!repo.findAirportData(iataCode).isPresent())
+	    	if(!repo.findAirport(iataCode).isPresent())
 	    		return Response.status(Response.Status.NOT_FOUND).build();
 	    	else
 	    	{
@@ -107,8 +105,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAirports() 
     {
-    	Set<String> aps = repo.getAirports();
-		return Response.status(Response.Status.OK).entity(aps).build();
+    	Set<String> iatas = repo.getAirportCodes();
+		return Response.status(Response.Status.OK).entity(iatas).build();
     }
     
     /**
@@ -123,13 +121,11 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAirport(@PathParam("iata") String iata) 
     {
-    	Optional<AirportData> ad = repo.findAirportData(iata);
-    	if(ad.isPresent())
-    		return Response.status(Response.Status.OK).entity(ad.get()).build();
-    	else
-    		return Response.status(Response.Status.NOT_FOUND).build();
+    	return repo.findAirport(iata)
+    			   .map(Response.status(Response.Status.OK)::entity)
+    	 		   .orElse(Response.status(Response.Status.NOT_FOUND))
+    	 		   .build();
     }
-
     
     /**
      * Add a new airport to the known airport list.
@@ -148,12 +144,13 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     {
     	try
     	{
-    		AirportDataBuilder a = new AirportDataBuilder();
-    		a.withIata(iata);
-    		a.withLat(Double.valueOf(latString));
-    		a.withLon(Double.valueOf(longString));
+    		AirportData airport = AirportData.builder()
+								    		 .iata(iata.toUpperCase())
+								    		 .lat(Double.valueOf(latString))
+								    		 .lon(Double.valueOf(longString))
+								    		 .build();
         	
-    		repo.addAirport(a.build());
+    		repo.addAirport(airport);
     		return Response.status(Response.Status.OK).build();
     	}
     	catch(WeatherException e)
@@ -176,6 +173,9 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	try
     	{
     		AirportData data = mapper.readValue(airportDataJson, AirportData.class);
+    		data = data.withIata(data.iata().toUpperCase())
+    				   .withIcao(data.icao().toUpperCase());
+    		
     		repo.addAirport(data);
     		return Response.status(Response.Status.OK).build();
     	}

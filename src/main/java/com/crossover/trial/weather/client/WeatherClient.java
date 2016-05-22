@@ -8,7 +8,6 @@ import javax.ws.rs.core.Response;
 
 import com.crossover.trial.weather.exceptions.WeatherException;
 import com.crossover.trial.weather.model.DataPoint;
-import com.crossover.trial.weather.model.DataPoint.DataPointBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,9 +60,9 @@ public class WeatherClient
     public void populate(String pointType, int first, int second, int third, double mean, int count) 
     {
         WebTarget path = collect.path("/weather/BOS/" + pointType);
-        DataPoint dp = new DataPointBuilder()
-			                .withFirst(first).withSecond(second).withThird(third).withMean(mean).withCount(count)
-			                .build();
+        DataPoint dp = DataPoint.builder()
+			                	.first(first).second(second).third(third).mean(mean).count(count)
+			                	.build();
         path.request().post(Entity.entity(dp, "application/json"));
     }
 
