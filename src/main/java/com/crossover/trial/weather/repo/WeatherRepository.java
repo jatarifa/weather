@@ -13,9 +13,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Repository;
 
 import com.crossover.trial.weather.model.AirportData;
+import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.model.DataPointType;
-import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 
 @Repository
 public class WeatherRepository implements InitializingBean

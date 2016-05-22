@@ -1,5 +1,15 @@
 package com.crossover.trial.weather;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.FileReader;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +34,6 @@ import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.model.DataPoint.DataPointBuilder;
 import com.crossover.trial.weather.repo.WeatherRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static org.junit.Assert.*;
-
-import java.io.FileReader;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Before;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = WeatherServer.class)

@@ -1,5 +1,6 @@
 package com.crossover.trial.weather;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.DELETE;
@@ -81,10 +82,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
 	    	DataPointType type = DataPointType.valueOf(pointType.toUpperCase());
 	    	
 	    	if(!repo.findAirportData(iataCode).isPresent())
-	    	{
-	    		log.error("Airport doesn't exists.: {}", iataCode);
-	    		return Response.status(Response.Status.BAD_REQUEST).build();
-	    	}	    		
+	    		return Response.status(Response.Status.NOT_FOUND).build();
 	    	else
 	    	{
 				repo.addDataPoint(iataCode, type, mapper.readValue(dataPointJson, DataPoint.class));
@@ -94,7 +92,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	catch(Exception e)
     	{
     		log.error("UpdateWeather error.", e);
-    		return Response.status(Response.Status.BAD_REQUEST).build();
+    		return Response.status(Response.Status.NOT_FOUND).build();
     	}
 	}
     
@@ -125,11 +123,11 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAirport(@PathParam("iata") String iata) 
     {
-    	AirportData ad = repo.findAirportData(iata).orElse(null);
-    	if(ad != null)
-    		return Response.status(Response.Status.OK).entity(ad).build();
+    	Optional<AirportData> ad = repo.findAirportData(iata);
+    	if(ad.isPresent())
+    		return Response.status(Response.Status.OK).entity(ad.get()).build();
     	else
-    		return Response.status(Response.Status.BAD_REQUEST).build();
+    		return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     
@@ -161,7 +159,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	catch(WeatherException e)
     	{
     		log.error("Error adding airport.", e);
-    		return Response.status(Response.Status.BAD_REQUEST).build();
+    		return Response.status(Response.Status.NOT_FOUND).build();
     	}
     }
 
@@ -184,7 +182,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     	catch(Exception e)
     	{
     		log.error("Error adding airport.", e);
-    		return Response.status(Response.Status.BAD_REQUEST).build();
+    		return Response.status(Response.Status.NOT_FOUND).build();
     	}
     }
     

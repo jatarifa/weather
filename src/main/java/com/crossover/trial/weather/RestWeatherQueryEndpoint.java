@@ -1,7 +1,6 @@
 package com.crossover.trial.weather;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,17 +109,11 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 	{
 		Optional<AirportData> airport = repo.findAirportData(iata);
     	if(!airport.isPresent())
-    	{
-    		log.error("Airport not found. : {}", iata);
-        	return Response.status(Response.Status.BAD_REQUEST).entity(Collections.emptyList()).build();
-    	}
+        	return Response.status(Response.Status.NOT_FOUND).build();
 
 		double radius = Optional.ofNullable(radiusString).map(Double::valueOf).orElse(0.0);
 		if(radius < 0)
-		{
-    		log.error("Incorrect radius. : {}", radiusString);
-        	return Response.status(Response.Status.BAD_REQUEST).entity(Collections.emptyList()).build();
-		}
+        	return Response.status(Response.Status.NOT_FOUND).build();
 		
         repo.updateRequestFrequency(iata, radius);
 
