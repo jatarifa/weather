@@ -1,7 +1,9 @@
 package com.crossover.trial.weather.model;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -13,6 +15,8 @@ import lombok.ToString;
 @Getter
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor(force = true)
 public class DataPoint implements DeepCloned
 {
 	private static final long serialVersionUID = 3549339775827934548L;
@@ -22,24 +26,6 @@ public class DataPoint implements DeepCloned
 	private int third;
 	private double mean;
 	private int count;
-
-	public DataPoint() 
-	{
-		first = 0;
-		second = 0;
-		third = 0;
-		mean = 0.0;
-		count = 0;		
-	}
-
-    protected DataPoint(int first, int second, int third, double mean, int count) 
-    {
-        this.first = first;
-        this.second = second;
-        this.third = third;
-        this.mean = mean;
-        this.count = count;
-    }
     
     public static class DataPointBuilder 
     {
