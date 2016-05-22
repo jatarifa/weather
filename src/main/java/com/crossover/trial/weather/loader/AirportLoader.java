@@ -16,6 +16,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.crossover.trial.weather.exceptions.WeatherException;
 import com.crossover.trial.weather.model.AirportData;
+import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +30,7 @@ public class AirportLoader
 {
 	private static final String BASE_SERVER = "http://localhost:9090";
 	private static final String OK = "OK";
+	private static final int RECORDS_IN_A_ROW = 11;
 	
     private final WebTarget collect = ClientBuilder.newClient().target(BASE_SERVER + "/collect");
     
@@ -72,7 +74,6 @@ public class AirportLoader
 	    		{
 		    		CSVRecord record = it.next();
 		    		AirportData a = parseAirportRegistry(record);
-		    		AirportData.validateData(a);
 		    		uploadAirport(a);
 		    		
 		    		log.info("Airport {} loaded.",  a.getIata());
@@ -92,19 +93,24 @@ public class AirportLoader
      */
     private AirportData parseAirportRegistry(CSVRecord record)
     {
-		AirportData a = new AirportData();
-		a.setName(record.get(1));
-		a.setCity(record.get(2));
-		a.setCountry(record.get(3));
-		a.setIata(record.get(4));
-		a.setIcao(record.get(5));
-		a.setLat(checkDouble("Latitude", record.get(6)));
-		a.setLon(checkDouble("Longitude", record.get(7)));
-		a.setAlt(checkDouble("Altitude", record.get(8)));
-		a.setTimezone(checkDouble("Timezone", record.get(9)));
-		a.setDst(record.get(10));
-		
-		return a;    	
+    	if(record.size() == RECORDS_IN_A_ROW)
+    	{
+			AirportDataBuilder a = new AirportDataBuilder();
+			a.withName(record.get(1));
+			a.withCity(record.get(2));
+			a.withCountry(record.get(3));
+			a.withIata(record.get(4));
+			a.withIcao(record.get(5));
+			a.withLat(checkDouble("Latitude", record.get(6)));
+			a.withLon(checkDouble("Longitude", record.get(7)));
+			a.withAlt(checkDouble("Altitude", record.get(8)));
+			a.withTimezone(checkDouble("Timezone", record.get(9)));
+			a.withDst(record.get(10));
+			
+			return a.build();    	
+    	}
+    	else
+    		throw new WeatherException("Invalid number of records on row " + record.toString());
     }
 
     /**

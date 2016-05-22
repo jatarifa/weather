@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import com.crossover.trial.weather.exceptions.WeatherException;
 import com.crossover.trial.weather.model.AirportData;
+import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.model.DataPointType;
 import com.crossover.trial.weather.repo.WeatherRepository;
@@ -149,12 +150,12 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
     {
     	try
     	{
-    		AirportData ad = new AirportData();
-    		ad.setIata(iata);
-    		ad.setLat(Double.valueOf(latString));
-    		ad.setLon(Double.valueOf(longString));
+    		AirportDataBuilder a = new AirportDataBuilder();
+    		a.withIata(iata);
+    		a.withLat(Double.valueOf(latString));
+    		a.withLon(Double.valueOf(longString));
         	
-    		repo.addAirport(ad);
+    		repo.addAirport(a.build());
     		return Response.status(Response.Status.OK).build();
     	}
     	catch(WeatherException e)

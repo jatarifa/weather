@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import com.crossover.trial.weather.model.AirportData;
 import com.crossover.trial.weather.model.DataPoint;
 import com.crossover.trial.weather.model.DataPointType;
+import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 
 @Repository
 public class WeatherRepository implements InitializingBean
@@ -86,16 +87,13 @@ public class WeatherRepository implements InitializingBean
      */
     public void addAirport(AirportData ad) 
     {
-    	ad.setIata(ad.getIata() != null ? ad.getIata().toUpperCase() : null);
-    	AirportData.validateData(ad);
-    	
-    	Optional<AirportData> old = findAirportData(ad.getIata());
-    	if(old.isPresent())
-    		old.get().copyFrom(ad);
-    	else
-    		airportData = airportData.plus(ad);
+    	ad.validate();
+    	airportData = findAirportData(ad.getIata())
+    						.map(airportData::minus)
+    						.orElse(airportData)
+    						.plus(ad);
     }   
-	
+
     /**
      * Delete a new known airport to our list.
      *
@@ -126,25 +124,21 @@ public class WeatherRepository implements InitializingBean
     {
         airportData = HashTreePSet.empty();
         radiusFreq = HashTreePMap.empty();
-        
-        addAirport(getAirportDataMock("BOS", 42.364347, -71.005181));
-        addAirport(getAirportDataMock("EWR", 40.6925, -74.168667));
-        addAirport(getAirportDataMock("JFK", 40.639751, -73.778925));
-        addAirport(getAirportDataMock("LGA", 40.777245, -73.872608));
-        addAirport(getAirportDataMock("MMU", 40.79935, -74.4148747));
+		
+        addAirport(buildData("BOS", 42.364347, -71.005181));
+        addAirport(buildData("EWR", 40.6925,   -74.168667));
+        addAirport(buildData("JFK", 40.639751, -73.778925));
+        addAirport(buildData("LGA", 40.777245, -73.872608));
+        addAirport(buildData("MMU", 40.79935,  -74.4148747));
     }
-
-    /**
-     * Construct a mock airport
-     */
-    private AirportData getAirportDataMock(String iata, double lat, double lon)
+    
+    private AirportData buildData(String iata, double lat, double lon)
     {
-    	AirportData ad = new AirportData();
-    	ad.setIata(iata);
-    	ad.setLat(lat);
-    	ad.setLon(lon);
-    	
-    	return ad;
+		return new AirportDataBuilder()
+						.withIata(iata)
+						.withLat(lat)
+						.withLon(lon)
+						.build();
     }
     
     /**

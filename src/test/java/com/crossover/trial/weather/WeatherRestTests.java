@@ -18,8 +18,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.crossover.trial.weather.loader.AirportLoader;
 import com.crossover.trial.weather.model.AirportData;
+import com.crossover.trial.weather.model.AirportData.AirportDataBuilder;
 import com.crossover.trial.weather.model.AtmosphericInformation;
 import com.crossover.trial.weather.model.DataPoint;
+import com.crossover.trial.weather.model.DataPoint.DataPointBuilder;
 import com.crossover.trial.weather.repo.WeatherRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -75,18 +77,19 @@ public class WeatherRestTests
     @Test
     public void collectUpdateWeather() 
     {
-    	DataPoint p = new DataPoint.Builder().withFirst(1).withSecond(2).withThird(3).withMean(2).withCount(1).build();
+    	DataPointBuilder p = new DataPointBuilder().withFirst(1).withSecond(2).withThird(3).withMean(2).withCount(1);
+    	DataPoint dp = p.build();
 
     	// Bad calls (DataPointType wrong)
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", p, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", dp, String.class).getStatusCode().is2xxSuccessful());
     	// Bad calls (Iata not existing)
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/non/wind", p, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/non/wind", dp, String.class).getStatusCode().is2xxSuccessful());
     	
     	// Good call
-    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", p, String.class).getStatusCode());    	
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/BOS/humidity", dp, String.class).getStatusCode());    	
     	AirportData airport = rest.getForEntity(getBase() + "/collect/airport/BOS", AirportData.class).getBody();
     	assertNotNull(airport);
-    	assertEquals(p, airport.getAtmosphericInformation().getHumidity());
+    	assertEquals(dp, airport.getAtmosphericInformation().getHumidity());
     }
     
     @Test
@@ -134,33 +137,33 @@ public class WeatherRestTests
     @Test
     public void collectAddAirport() 
     {
-    	AirportData air = new AirportData();
-    	air.setName("Barajas");
-    	air.setCity("Madrid");
-    	air.setCountry("Spain");
-    	air.setIata("KKFKFK");  //bad
-    	air.setIcao("MADRDD");  //bad
-    	air.setAlt(1000.23);
-    	air.setLat(10.2);
-    	air.setLon(33.22);
-    	air.setTimezone(200);
-    	air.setDst("3");        //bad
+    	AirportDataBuilder b = new AirportDataBuilder();
+    	b.withName("Barajas");
+    	b.withCity("Madrid");
+    	b.withCountry("Spain");
+    	b.withIata("KKFKFK");  //bad
+    	b.withIcao("MADRDD");  //bad
+    	b.withAlt(1000.23);
+    	b.withLat(10.2);
+    	b.withLon(33.22);
+    	b.withTimezone(200);
+    	b.withDst("3");        //bad
     	
     	// Bad call (iata length > 3)
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
 
     	// Bad call (icao length > 4)
-    	air.setIata("MAD");
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+    	b.withIata("MAD");
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
 
     	// Bad call (dst doesn't exists)
-    	air.setIcao("MADR");
-    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+    	b.withIcao("MADR");
+    	assertTrue(!rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
 
     	// Good call (insert new airport)
-    	air.setDst("E");
+    	b.withDst("E");
     	ResponseEntity<AirportData> airport;
-    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
     	airport = rest.exchange(getBase() + "/collect/airport/MAD", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertTrue(airport.getBody() != null);
         assertTrue(airport.getBody().getIata().equals("MAD"));
@@ -169,9 +172,9 @@ public class WeatherRestTests
         assertTrue(airport.getBody().getName().equals("Barajas"));
 
         // Good call (update airport)
-        air.setLat(1);
-        air.setLon(9);
-    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", air, String.class).getStatusCode().is2xxSuccessful());
+        b.withLat(1);
+        b.withLon(9);
+    	assertTrue(rest.postForEntity(getBase() + "/collect/airport", b.build(), String.class).getStatusCode().is2xxSuccessful());
     	airport = rest.exchange(getBase() + "/collect/airport/MAD", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class);
         assertTrue(airport.getBody() != null);
         assertTrue(airport.getBody().getIata().equals("MAD"));
@@ -218,12 +221,13 @@ public class WeatherRestTests
 		assertEquals(1, info.getBody().size());
 
     	// Good call (return near airports info)		
-		DataPoint p = new DataPoint.Builder().withFirst(10).withSecond(20).withThird(30).withMean(22).withCount(10).build();
-    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/JFK/wind", p, String.class).getStatusCode());    	
-        p.setMean(40.0);
-    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/EWR/wind", p, String.class).getStatusCode());    	
-        p.setMean(30.0);
-    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/LGA/wind", p, String.class).getStatusCode());
+		DataPointBuilder p = new DataPointBuilder().withFirst(10).withSecond(20).withThird(30).withMean(22).withCount(10);
+		
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/JFK/wind", p.build(), String.class).getStatusCode());    	
+        p.withMean(40.0);
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/EWR/wind", p.build(), String.class).getStatusCode());    	
+        p.withMean(30.0);
+    	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/LGA/wind", p.build(), String.class).getStatusCode());
 		
 		info = rest.exchange(getBase() + "/query/weather/JFK/200", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<List<AtmosphericInformation>>() {});
 		assertNotNull(info.getBody());
