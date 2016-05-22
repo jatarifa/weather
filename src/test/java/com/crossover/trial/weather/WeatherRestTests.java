@@ -76,7 +76,7 @@ public class WeatherRestTests
     @Test
     public void collectUpdateWeather() 
     {
-    	DataPoint dp = DataPoint.builder().first(1).second(2).third(3).mean(2).count(1).build();
+    	DataPoint dp = DataPoint.builder().first(1).second(2).third(3).mean(2.0).count(1).build();
 
     	// Bad calls (DataPointType wrong)
     	assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", dp, String.class).getStatusCode().is2xxSuccessful());
@@ -219,7 +219,7 @@ public class WeatherRestTests
 		assertEquals(1, info.getBody().size());
 
     	// Good call (return near airports info)		
-		DataPoint.Builder p = DataPoint.builder().first(10).second(20).third(30).mean(22).count(10);
+		DataPoint.Builder p = DataPoint.builder().first(10).second(20).third(30).mean(22.0).count(10);
 		
     	assertEquals(HttpStatus.OK, rest.postForEntity(getBase() + "/collect/weather/JFK/wind", p.build(), String.class).getStatusCode());    	
         p.mean(40.0);

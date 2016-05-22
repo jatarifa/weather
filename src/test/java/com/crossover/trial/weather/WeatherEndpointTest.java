@@ -41,7 +41,7 @@ public class WeatherEndpointTest
     public void setUp() throws Exception 
     {
     	_repo.init();
-        _dp = DataPoint.builder().first(10).second(20).third(30).mean(22).count(10);
+        _dp = DataPoint.builder().first(10).second(20).third(30).mean(22.0).count(10);
         _update.updateWeather("BOS", "wind", _gson.toJson(_dp.build()));
         _query.weather("BOS", "0").getEntity();
     }
@@ -82,7 +82,7 @@ public class WeatherEndpointTest
 	@Test
     public void testUpdate() throws Exception 
     {
-        DataPoint windDp = DataPoint.builder().first(10).second(20).third(30).mean(22).count(10).build();
+        DataPoint windDp = DataPoint.builder().first(10).second(20).third(30).mean(22.0).count(10).build();
         _update.updateWeather("BOS", "wind", _gson.toJson(windDp));
         _query.weather("BOS", "0").getEntity();
 
@@ -90,7 +90,7 @@ public class WeatherEndpointTest
         JsonElement pingResult = new JsonParser().parse(ping);
         assertEquals(1, pingResult.getAsJsonObject().get("datasize").getAsInt());
 
-        DataPoint cloudCoverDp = DataPoint.builder().first(10).second(60).third(100).mean(50).count(4).build();
+        DataPoint cloudCoverDp = DataPoint.builder().first(10).second(60).third(100).mean(50.0).count(4).build();
         _update.updateWeather("BOS", "cloudcover", _gson.toJson(cloudCoverDp));
 
         List<AtmosphericInformation> ais = (List<AtmosphericInformation>) _query.weather("BOS", "0").getEntity();

@@ -25,11 +25,11 @@ public abstract class AbstractAirportData
     static final Double LAT_MAX = 90.0;
     static final Double LON_MIN = -180.0;
     static final Double LON_MAX = 180.0;
-    static final double R = 6372.8;
+    static final Double R = 6372.8;
 
 	public abstract String iata();
-	public abstract double lat();
-    public abstract double lon();
+	public abstract Double lat();
+    public abstract Double lon();
 	@Nullable public abstract String icao();
     @Nullable public abstract String name();
     @Nullable public abstract String city();
@@ -48,7 +48,7 @@ public abstract class AbstractAirportData
     public Optional<AirportData> withDataPointToAtmosphereInformation(DataPointType pointType, DataPoint point)
     {
     	Optional<AtmosphericInformation> ai;
-    	Optional<DataPoint> dp = Optional.ofNullable(point);
+    	Optional<DataPoint> dp = Optional.of(point);
     	switch(pointType)
     	{
     		case WIND:
@@ -76,7 +76,7 @@ public abstract class AbstractAirportData
     	    	       .map(atmosphericInformation()::withPrecipitation);
                 break;
             default:
-            	return null;
+            	return Optional.empty();
     	}
     	
     	return ai.map(a -> AirportData.builder()

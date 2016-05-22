@@ -11,9 +11,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(as = DataPoint.class)
 public interface AbstractDataPoint 
 {
-	abstract int first();
-	abstract int second();
-	abstract int third();
-	abstract double mean();
-	abstract int count();
+	abstract Integer first();
+	abstract Integer second();
+	abstract Integer third();
+	abstract Double mean();
+	abstract Integer count();
 }
