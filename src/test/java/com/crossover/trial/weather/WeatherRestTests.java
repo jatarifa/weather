@@ -245,7 +245,19 @@ public class WeatherRestTests
         assertNotNull(airports);
         assertEquals(10, airports.size());
 	}
-    
+
+    @Test
+	public void testLoaderIncorrectRegistries() throws Exception
+	{
+		String dat = WeatherRestTests.class.getResource("/airports_bad.dat").getFile();
+		AirportLoader al = new AirportLoader();
+        al.upload(new FileReader(dat));
+        
+        Set<String> airports = rest.exchange(getBase() + "/collect/airports", HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<Set<String>>() {}).getBody();
+        assertNotNull(airports);
+        assertEquals(5, airports.size());
+	}
+
     // Mock class without validations
     protected static class MockAirportData
     {
