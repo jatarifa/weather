@@ -10,40 +10,38 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j(topic="WeatherServer")
+@Slf4j(topic = "WeatherServer")
 @SpringBootApplication
 public class WeatherServer implements InitializingBean
 {
-	@Autowired
-	private Environment environment;
+	@Autowired private Environment environment;
 
-    /**
-     * Starts the server
-     */
-	public static void main(String[] args) 
+	/**
+	 * Starts the server
+	 */
+	public static void main(String[] args)
 	{
 		SpringApplication.run(WeatherServer.class, args);
 	}
 
-    /**
-     * Inform after server init
-     */
+	/**
+	 * Inform after server init
+	 */
 	@Override
-	public void afterPropertiesSet() throws Exception 
+	public void afterPropertiesSet() throws Exception
 	{
-		log.info("Weather Server started.\n url=http://{}:{}\n", 
-									environment.getProperty("server.address"), 
-									environment.getProperty("server.port"));	
+		log.info("Weather Server started.\n url=http://{}:{}\n", environment.getProperty("server.address"),
+				environment.getProperty("server.port"));
 	}
-    
-    /**
-     * Configure Jackson Json Mapper
-     */
+
+	/**
+	 * Configure Jackson Json Mapper
+	 */
 	@Bean
-	public Jackson2ObjectMapperBuilder jacksonBuilder() 
+	public Jackson2ObjectMapperBuilder jacksonBuilder()
 	{
-	    Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-	    builder.indentOutput(true);
-	    return builder;
+		Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+		builder.indentOutput(true);
+		return builder;
 	}
 }
