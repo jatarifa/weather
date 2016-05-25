@@ -121,9 +121,12 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 		List<AtmosphericInformation> retval = Collections.emptyList();
 		if (Double.compare(radius, MIN_RADIUS) > 0)
 		{
-			retval = repo.getAirports().stream().filter(a -> a.atmosphericInformation().notEmpty())
+			retval = repo.getAirports()
+					.stream()
+					.filter(a -> a.atmosphericInformation().notEmpty())
 					.filter(a -> Double.compare(airport.get().calculateDistanceTo(a), radius) <= 0)
-					.map(a -> a.atmosphericInformation()).collect(Collectors.toList());
+					.map(a -> a.atmosphericInformation())
+					.collect(Collectors.toList());
 		}
 
 		if (retval.isEmpty())

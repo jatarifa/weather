@@ -58,8 +58,11 @@ public class AirportLoader
 	 */
 	public void upload(FileReader in) throws IOException
 	{
-		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withDelimiter(',').withIgnoreEmptyLines()
-				.withIgnoreSurroundingSpaces().withQuote('"').withSkipHeaderRecord();
+		CSVFormat csvFileFormat = CSVFormat.DEFAULT.withDelimiter(',')
+				.withIgnoreEmptyLines()
+				.withIgnoreSurroundingSpaces()
+				.withQuote('"')
+				.withSkipHeaderRecord();
 
 		try (CSVParser parser = new CSVParser(in, csvFileFormat))
 		{

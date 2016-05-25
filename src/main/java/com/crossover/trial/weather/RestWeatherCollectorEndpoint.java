@@ -117,8 +117,10 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAirport(@PathParam("iata") String iata)
 	{
-		return repo.findAirport(iata).map(Response.status(Response.Status.OK)::entity)
-				.orElse(Response.status(Response.Status.NOT_FOUND)).build();
+		return repo.findAirport(iata)
+				.map(Response.status(Response.Status.OK)::entity)
+				.orElse(Response.status(Response.Status.NOT_FOUND))
+				.build();
 	}
 
 	/**
@@ -137,8 +139,11 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint
 	{
 		try
 		{
-			AirportData airport = AirportData.builder().iata(iata.toUpperCase()).lat(Double.valueOf(latString))
-					.lon(Double.valueOf(longString)).build();
+			AirportData airport = AirportData.builder()
+					.iata(iata.toUpperCase())
+					.lat(Double.valueOf(latString))
+					.lon(Double.valueOf(longString))
+					.build();
 
 			repo.addAirport(airport);
 			return Response.status(Response.Status.OK).build();

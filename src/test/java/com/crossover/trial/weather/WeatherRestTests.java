@@ -76,10 +76,12 @@ public class WeatherRestTests
 		DataPoint dp = DataPoint.builder().first(1).second(2).third(3).mean(2.0).count(1).build();
 
 		// Bad calls (DataPointType wrong)
-		assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", dp, String.class).getStatusCode()
+		assertTrue(!rest.postForEntity(getBase() + "/collect/weather/BOS/wrong", dp, String.class)
+				.getStatusCode()
 				.is2xxSuccessful());
 		// Bad calls (Iata not existing)
-		assertTrue(!rest.postForEntity(getBase() + "/collect/weather/non/wind", dp, String.class).getStatusCode()
+		assertTrue(!rest.postForEntity(getBase() + "/collect/weather/non/wind", dp, String.class)
+				.getStatusCode()
 				.is2xxSuccessful());
 
 		// Good call
@@ -120,18 +122,22 @@ public class WeatherRestTests
 	public void collectAddAirportMin()
 	{
 		// Bad call (iata length > 3)
-		assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaaa/10/100", null, String.class).getStatusCode()
+		assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaaa/10/100", null, String.class)
+				.getStatusCode()
 				.is2xxSuccessful());
 		// Bad call (lat not in correct range)
-		assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/-100/100", null, String.class).getStatusCode()
+		assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/-100/100", null, String.class)
+				.getStatusCode()
 				.is2xxSuccessful());
 		// Bad call (lon not in correct range)
-		assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/10/-190", null, String.class).getStatusCode()
+		assertTrue(!rest.postForEntity(getBase() + "/collect/airport/aaa/10/-190", null, String.class)
+				.getStatusCode()
 				.is2xxSuccessful());
 
 		// Good call
 		ResponseEntity<AirportData> airport;
-		assertTrue(rest.postForEntity(getBase() + "/collect/airport/aaa/90/180", null, String.class).getStatusCode()
+		assertTrue(rest.postForEntity(getBase() + "/collect/airport/aaa/90/180", null, String.class)
+				.getStatusCode()
 				.is2xxSuccessful());
 		airport = rest.exchange(getBase() + "/collect/airport/aaa", HttpMethod.GET, HttpEntity.EMPTY,
 				AirportData.class);
@@ -201,7 +207,8 @@ public class WeatherRestTests
 	{
 		// Bad call (airport doesnt' exists)
 		assertTrue(rest.exchange(getBase() + "/collect/airport/PPP", HttpMethod.DELETE, HttpEntity.EMPTY, String.class)
-				.getStatusCode().is2xxSuccessful());
+				.getStatusCode()
+				.is2xxSuccessful());
 
 		// Good call
 		AirportData airport = rest
@@ -209,10 +216,12 @@ public class WeatherRestTests
 				.getBody();
 		assertNotNull(airport);
 		assertTrue(rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.DELETE, HttpEntity.EMPTY, String.class)
-				.getStatusCode().is2xxSuccessful());
+				.getStatusCode()
+				.is2xxSuccessful());
 		assertTrue(
 				!rest.exchange(getBase() + "/collect/airport/BOS", HttpMethod.GET, HttpEntity.EMPTY, AirportData.class)
-						.getStatusCode().is2xxSuccessful());
+						.getStatusCode()
+						.is2xxSuccessful());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -221,7 +230,7 @@ public class WeatherRestTests
 	{
 		ResponseEntity<String> res = rest.getForEntity(getBase() + "/query/ping", String.class);
 		assertTrue(res.getStatusCode().is2xxSuccessful());
-		Map<String, Object> map = (Map<String, Object>) mapper.readValue(res.getBody(), Map.class);
+		Map<String, Object> map = mapper.readValue(res.getBody(), Map.class);
 		assertEquals(3, map.size());
 		assertNotNull(map.get("datasize"));
 		assertNotNull(map.get("iata_freq"));
