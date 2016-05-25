@@ -55,34 +55,34 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint
 	@Path("/ping")
 	public String ping()
 	{
+		Map<String, Object> retval = new HashMap<>();
+
+		long dataSize = repo.getAirports().stream().filter(a -> a.atmosphericInformation().recentReaded()).count();
+
+		retval.put("datasize", dataSize);
+
+		int freqSize = repo.getAirportData().size();
+		Map<String, Double> freq = new HashMap<>();
+		if (freqSize != 0)
+		{
+			repo.getAirportData().stream().forEach(a -> {
+				double frac = (double) a.getValue() / freqSize;
+				freq.put(a.getKey().iata(), frac);
+			});
+		}
+		retval.put("iata_freq", freq);
+
+		int m = repo.getRadiusFreq().keySet().stream().max(Double::compare).orElse(MAX_HIST).intValue() + 1;
+
+		int[] hist = new int[m];
+		repo.getRadiusFreq().entrySet().stream().forEach(k -> {
+			int i = k.getKey().intValue() % 10;
+			hist[i] += k.getValue();
+		});
+		retval.put("radius_freq", hist);
+		
 		try
 		{
-			Map<String, Object> retval = new HashMap<>();
-
-			long dataSize = repo.getAirports().stream().filter(a -> a.atmosphericInformation().recentReaded()).count();
-
-			retval.put("datasize", dataSize);
-
-			int freqSize = repo.getAirportData().size();
-			Map<String, Double> freq = new HashMap<>();
-			if (freqSize != 0)
-			{
-				repo.getAirportData().stream().forEach(a -> {
-					double frac = (double) a.getValue() / freqSize;
-					freq.put(a.getKey().iata(), frac);
-				});
-			}
-			retval.put("iata_freq", freq);
-
-			int m = repo.getRadiusFreq().keySet().stream().max(Double::compare).orElse(MAX_HIST).intValue() + 1;
-
-			int[] hist = new int[m];
-			repo.getRadiusFreq().entrySet().stream().forEach(k -> {
-				int i = k.getKey().intValue() % 10;
-				hist[i] += k.getValue();
-			});
-			retval.put("radius_freq", hist);
-
 			return mapper.writeValueAsString(retval);
 		}
 		catch (Exception e)

@@ -94,5 +94,4 @@ public class WeatherEndpointTest
 		assertEquals(ais.get(0).wind(), windDp);
 		assertEquals(ais.get(0).cloudCover(), cloudCoverDp);
 	}
-
 }

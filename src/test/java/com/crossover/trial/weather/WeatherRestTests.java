@@ -29,6 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
+import com.crossover.trial.weather.client.WeatherClient;
 import com.crossover.trial.weather.loader.AirportLoader;
 import com.crossover.trial.weather.model.AirportData;
 import com.crossover.trial.weather.model.AtmosphericInformation;
@@ -252,6 +253,12 @@ public class WeatherRestTests
 				{});
 		assertTrue(!info.getStatusCode().is2xxSuccessful());
 
+		// Bad call (radius < 0)
+		info = rest.exchange(getBase() + "/query/weather/BOS/-100", HttpMethod.GET, HttpEntity.EMPTY,
+				new ParameterizedTypeReference<List<AtmosphericInformation>>()
+				{});
+		assertTrue(!info.getStatusCode().is2xxSuccessful());
+
 		// Good call (return same airport info)
 		info = rest.exchange(getBase() + "/query/weather/BOS/0", HttpMethod.GET, HttpEntity.EMPTY,
 				new ParameterizedTypeReference<List<AtmosphericInformation>>()
@@ -331,6 +338,17 @@ public class WeatherRestTests
 				{}).getBody();
 		assertNotNull(airports);
 		assertEquals(10, airports.size());
+	}
+
+	@Test
+	public void testClient()
+	{
+		WeatherClient wc = new WeatherClient();
+
+		wc.pingCollect();
+		wc.populate("wind", 0, 10, 6, 4, 20);
+		wc.query("BOS");
+		wc.pingQuery();
 	}
 
 	protected void execLoaderUnderSecurityManager(Consumer<Integer> func, String... file) throws IOException
