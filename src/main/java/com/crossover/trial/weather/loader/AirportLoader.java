@@ -49,6 +49,11 @@ public class AirportLoader
 
 			System.exit(0);
 		}
+		else
+		{
+			log.error("Incorrect number of parameters");		
+			System.exit(1);
+		}
 	}
 
 	/**

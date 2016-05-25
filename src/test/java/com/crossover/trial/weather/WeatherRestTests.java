@@ -5,9 +5,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileReader;
+import java.io.IOException;
+import java.security.Permission;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +42,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @IntegrationTest("server.port:9090")
 public class WeatherRestTests
 {
+	private static final Integer EXIT_ERROR_CODE = 1;
+	private static final Integer EXIT_OK_CODE = 0;
+
 	private RestTemplate rest = new TestRestTemplate();
 
 	// Internal repository
@@ -300,6 +306,99 @@ public class WeatherRestTests
 				{}).getBody();
 		assertNotNull(airports);
 		assertEquals(5, airports.size());
+	}
+
+	@Test
+	public void testLoaderMainNoParams() throws Exception
+	{
+		execLoaderUnderSecurityManager(status -> assertEquals(EXIT_ERROR_CODE, status));
+	}
+
+	@Test
+	public void testLoaderMainFileNotExists() throws Exception
+	{
+		execLoaderUnderSecurityManager(status -> assertEquals(EXIT_ERROR_CODE, status), "non_existing_file.txt");
+	}
+
+	@Test
+	public void testLoaderMainCorrect() throws Exception
+	{
+		String dat = WeatherRestTests.class.getResource("/airports.dat").getFile();
+		execLoaderUnderSecurityManager(status -> assertEquals(EXIT_OK_CODE, status), dat);
+
+		Set<String> airports = rest.exchange(getBase() + "/collect/airports", HttpMethod.GET, HttpEntity.EMPTY,
+				new ParameterizedTypeReference<Set<String>>()
+				{}).getBody();
+		assertNotNull(airports);
+		assertEquals(10, airports.size());
+	}
+
+	protected void execLoaderUnderSecurityManager(Consumer<Integer> func, String... file) throws IOException
+	{
+		SystemExitControl.forbidSystemExitCall();
+
+		try
+		{
+			AirportLoader.main(file);
+		}
+		catch (SystemExitControl.ExitTrappedException e)
+		{
+			func.accept(e.getStatus());
+		}
+		finally
+		{
+			SystemExitControl.enableSystemExitCall();
+		}
+	}
+
+	static class SystemExitControl
+	{
+		public static SecurityManager oldManager = null;
+
+		public static class ExitTrappedException extends SecurityException
+		{
+			private static final long serialVersionUID = 5510302772223257513L;
+
+			private Integer status;
+
+			public ExitTrappedException(Integer status)
+			{
+				this.status = status;
+			}
+
+			public Integer getStatus()
+			{
+				return status;
+			}
+		}
+
+		public static void forbidSystemExitCall()
+		{
+			oldManager = System.getSecurityManager();
+
+			final SecurityManager securityManager = new SecurityManager()
+			{
+				@Override
+				public void checkPermission(Permission perm)
+				{}
+
+				@Override
+				public void checkPermission(Permission perm, Object context)
+				{}
+
+				@Override
+				public void checkExit(int status)
+				{
+					throw new ExitTrappedException(status);
+				}
+			};
+			System.setSecurityManager(securityManager);
+		}
+
+		public static void enableSystemExitCall()
+		{
+			System.setSecurityManager(oldManager);
+		}
 	}
 
 	// Mock class without validations
